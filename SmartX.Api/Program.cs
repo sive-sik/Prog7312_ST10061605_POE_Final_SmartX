@@ -6,6 +6,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddSingleton<SensorStore>();
 builder.Services.AddSingleton<TelemetryStore>();
+builder.Services.AddSingleton<AttachmentStore>();
 
 builder.Services.AddCors(options =>
 {

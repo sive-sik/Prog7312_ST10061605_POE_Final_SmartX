@@ -1,36 +1,77 @@
 ﻿<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">SmartX.Client</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+        <a class="navbar-brand" href="">SmartX</a>
+
+        <button title="Navigation menu"
+                class="navbar-toggler"
+                @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
     </div>
 </div>
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+<div class="@NavMenuCssClass nav-scrollable"
+     @onclick="ToggleNavMenu">
+
     <nav class="nav flex-column">
+
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            <NavLink class="nav-link"
+                     href=""
+                     Match="NavLinkMatch.All">
+
+                <span class="bi bi-house-door-fill-nav-menu"
+                      aria-hidden="true"></span>
+
+                Home
             </NavLink>
         </div>
+
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+            <NavLink class="nav-link"
+                     href="telemetry">
+
+                <span class="bi bi-plus-square-fill-nav-menu"
+                      aria-hidden="true"></span>
+
+                Sensor Data
             </NavLink>
         </div>
+
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+            <NavLink class="nav-link"
+                     href="health">
+
+                <svg style="width:20px;
+                    height:20px;
+                    margin-right:12px;
+                    fill:white;
+                    flex-shrink:0;"
+                     viewBox="0 0 24 24"
+                     aria-hidden="true">
+
+                    <path d="M12 21
+                    C11.4 20.5 4 15.4 4 9.4
+                    C4 6.4 6.1 4.5 8.6 4.5
+                    C10.1 4.5 11.3 5.3 12 6.4
+                    C12.7 5.3 13.9 4.5 15.4 4.5
+                    C17.9 4.5 20 6.4 20 9.4
+                    C20 15.4 12.6 20.5 12 21Z" />
+
+                </svg>
+
+                Device Health
             </NavLink>
         </div>
+
     </nav>
 </div>
 
 @code {
     private bool collapseNavMenu = true;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string? NavMenuCssClass =>
+        collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu()
     {

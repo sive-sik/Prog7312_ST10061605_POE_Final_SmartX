@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SmartX.Api.Services;
 using SmartX.Core.Models;
-using System.Runtime.InteropServices;
 
 namespace SmartX.Api.Controllers;
 
@@ -10,10 +9,14 @@ namespace SmartX.Api.Controllers;
 public class SensorsController : ControllerBase
 {
     private readonly SensorStore _sensorStore;
+    private readonly AttachmentStore _attachmentStore;
 
-    public SensorsController(SensorStore sensorStore)
+    public SensorsController(
+        SensorStore sensorStore,
+        AttachmentStore attachmentStore)
     {
         _sensorStore = sensorStore;
+        _attachmentStore = attachmentStore;
     }
 
     [HttpGet]
@@ -29,7 +32,7 @@ public class SensorsController : ControllerBase
 
         if (sensor == null)
         {
-            return NotFound();
+            return NotFound("The specified sensor does not exist.");
         }
 
         return Ok(sensor);
@@ -77,5 +80,42 @@ public class SensorsController : ControllerBase
             nameof(GetById),
             new { id = sensor.Id },
             sensor);
+    }
+
+    [HttpPost("{id:guid}/attachments")]
+    public async Task<IActionResult> UploadAttachment(
+        Guid id,
+        IFormFile file)
+    {
+        SensorDevice? sensor = _sensorStore.GetById(id);
+
+        if (sensor == null)
+        {
+            return NotFound("The specified sensor does not exist.");
+        }
+
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest("Please select a valid file.");
+        }
+
+        try
+        {
+            string storedFileName =
+                await _attachmentStore.SaveFileAsync(id, file);
+
+            return Ok(new
+            {
+                SensorId = id,
+                OriginalFileName = file.FileName,
+                StoredFileName = storedFileName,
+                Size = file.Length,
+                Message = "Attachment uploaded successfully."
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

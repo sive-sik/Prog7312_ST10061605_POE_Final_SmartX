@@ -1,7 +1,179 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>SmartX Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container py-4">
 
-Welcome to your new app.
+    <div class="p-4 mb-4 bg-dark text-white rounded-4 shadow">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">
+                    SmartX IoT Ecosystem
+                </h1>
+
+                <p class="lead mb-3">
+                    A simulated Internet of Things platform for monitoring,
+                    validating and managing distributed smart devices.
+                </p>
+
+                <p class="mb-0">
+                    Built for PROG7312 3B - Portfolio of Evidence.
+                </p>
+            </div>
+
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="bg-white text-dark p-3 rounded-3">
+                    <strong>Student</strong>
+                    <div>Sive Sikutshwa</div>
+
+                    <strong class="d-block mt-2">Student Number</strong>
+                    <div>ST10061605</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <h2 class="fw-bold">SmartX Control Centre</h2>
+        <p class="text-muted">
+            Select a module below to access the SmartX ecosystem.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-success">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span class="badge bg-success">ACTIVE</span>
+                    </div>
+
+                    <h4 class="card-title">
+                        Sensor Data Ingestion and Telemetry
+                    </h4>
+
+                    <p class="card-text">
+                        Register SmartX IoT devices, monitor sensor telemetry,
+                        validate incoming data and manage simulated ESP32 nodes.
+                    </p>
+
+                    <a href="/telemetry"
+                       class="btn btn-success">
+                        Open Telemetry Module
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm opacity-75">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span class="badge bg-secondary">
+                            PART 2
+                        </span>
+                    </div>
+
+                    <h4 class="card-title">
+                        Real-Time Command Stream and History
+                    </h4>
+
+                    <p class="card-text">
+                        Process live telemetry queues, manage device commands,
+                        prioritise critical alerts and track command history.
+                    </p>
+
+                    <button class="btn btn-secondary"
+                            disabled>
+                        Coming in Part 2
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm opacity-75">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span class="badge bg-secondary">
+                            FINAL POE
+                        </span>
+                    </div>
+
+                    <h4 class="card-title">
+                        Network Topology and Mesh Routing
+                    </h4>
+
+                    <p class="card-text">
+                        Visualise the SmartX mesh network, inspect connected
+                        nodes and calculate efficient routing paths.
+                    </p>
+
+                    <button class="btn btn-secondary"
+                            disabled>
+                        Coming in Final PoE
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-4 mt-4">
+
+        <div class="col-md-4">
+            <div class="card border-0 bg-light h-100">
+                <div class="card-body">
+                    <h5>Multi-Type Telemetry</h5>
+                    <p class="mb-0">
+                        SmartX supports temperature, soil moisture,
+                        power consumption and actuator state data.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 bg-light h-100">
+                <div class="card-body">
+                    <h5>IoT Device Simulation</h5>
+                    <p class="mb-0">
+                        Simulated ESP32 devices allow SmartX to demonstrate
+                        high-volume IoT behaviour without physical hardware.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 bg-light h-100">
+                <div class="card-body">
+                    <h5>Advanced C# Concepts</h5>
+                    <p class="mb-0">
+                        The system demonstrates generics, collections,
+                        operator overloading, advanced arrays and recursion.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-5 p-4 rounded-4 bg-light border">
+        <h3>About SmartX</h3>
+
+        <p>
+            SmartX is designed to simulate a distributed IoT environment
+            consisting of environmental sensors, power monitoring devices
+            and smart actuators.
+        </p>
+
+        <p class="mb-0">
+            Part 1 focuses on the ingestion and validation layer, where
+            devices are registered and telemetry is received through the
+            SmartX .NET Web API.
+        </p>
+    </div>
+
+</div>

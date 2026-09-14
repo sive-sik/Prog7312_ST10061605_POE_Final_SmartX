@@ -1,0 +1,616 @@
+﻿@page "/telemetry"
+@using System.Net.Http.Json
+@using SmartX.Core.Models
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Net.Http.Headers
+@inject HttpClient Http
+
+<PageTitle>Smart-X Telemetry</PageTitle>
+
+<div class="container py-4">
+
+    <!-- Hero -->
+    <div class="p-4 mb-4 bg-dark text-white rounded-4 shadow">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 fw-bold mb-2">
+                    Sensor Data Ingestion & Telemetry
+                </h1>
+
+                <p class="lead mb-0">
+                    Register Smart-X IoT devices, manage deployment details,
+                    and attach configuration or diagnostic files.
+                </p>
+            </div>
+
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <span class="badge bg-success fs-6 px-3 py-2">
+                    PART 1 ACTIVE
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <span class="badge bg-dark mb-3">DEVICES</span>
+
+                    <h2 class="fw-bold mb-1">
+                        @sensors.Count
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Registered IoT nodes
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-success rounded-4">
+                <div class="card-body p-4">
+                    <span class="badge bg-success mb-3">ONLINE</span>
+
+                    <h2 class="fw-bold text-success mb-1">
+                        @OnlineSensorCount
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Devices currently active
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-primary rounded-4">
+                <div class="card-body p-4">
+                    <span class="badge bg-primary mb-3">CATEGORIES</span>
+
+                    <h2 class="fw-bold text-primary mb-1">
+                        @CategoryCount
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Smart-X sensor groups
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Registration Card -->
+        <div class="col-lg-5">
+
+            <div class="card shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+
+                    <div class="mb-4">
+                        <span class="badge bg-success mb-2">
+                            STEP 1
+                        </span>
+
+                        <h3 class="fw-bold">
+                            Register Sensor
+                        </h3>
+
+                        <p class="text-muted">
+                            Add a simulated ESP32 or Smart-X compatible IoT device.
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            MAC Address
+                        </label>
+
+                        <input class="form-control"
+                               placeholder="AA:BB:CC:DD:EE:10"
+                               @bind="newSensor.MacAddress" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Sensor Name
+                        </label>
+
+                        <input class="form-control"
+                               placeholder="ESP32-HYDRO-10"
+                               @bind="newSensor.Name" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Deployment Location
+                        </label>
+
+                        <input class="form-control"
+                               placeholder="Facility A / Greenhouse 1 / Zone B"
+                               @bind="newSensor.DeploymentLocation" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            Category
+                        </label>
+
+                        <select class="form-select"
+                                @bind="newSensor.Category">
+
+                            <option value="">
+                                Select category
+                            </option>
+
+                            <option value="Environmental">
+                                Environmental
+                            </option>
+
+                            <option value="Power Consumption">
+                                Power Consumption
+                            </option>
+
+                            <option value="Actuator">
+                                Actuator
+                            </option>
+
+                        </select>
+                    </div>
+
+                    <button class="btn btn-success w-100"
+                            @onclick="RegisterSensor">
+                        Register Smart-X Sensor
+                    </button>
+
+                    @if (!string.IsNullOrWhiteSpace(message))
+                    {
+                        <div class="alert alert-info mt-3 mb-0">
+                            @message
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Registered Devices -->
+        <div class="col-lg-7">
+
+            <div class="card shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+
+                        <div>
+                            <span class="badge bg-dark mb-2">
+                                STEP 2
+                            </span>
+
+                            <h3 class="fw-bold mb-1">
+                                Registered Sensors
+                            </h3>
+
+                            <p class="text-muted mb-0">
+                                Devices currently connected to the Smart-X gateway.
+                            </p>
+                        </div>
+
+                        <button class="btn btn-outline-dark"
+                                @onclick="LoadSensors">
+                            Refresh
+                        </button>
+
+                    </div>
+
+                    @if (sensors.Count == 0)
+                    {
+                        <div class="bg-light rounded-4 p-4 text-center">
+
+                            <h5>No sensors registered</h5>
+
+                            <p class="text-muted mb-0">
+                                Register your first Smart-X device using the form.
+                            </p>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row g-3">
+
+                            @foreach (SensorDevice sensor in sensors)
+                            {
+                                <div class="col-12">
+
+                                    <div class="border rounded-4 p-3">
+
+                                        <div class="d-flex justify-content-between align-items-start">
+
+                                            <div>
+                                                <h5 class="fw-bold mb-1">
+                                                    @sensor.Name
+                                                </h5>
+
+                                                <div class="text-muted small">
+                                                    @sensor.MacAddress
+                                                </div>
+                                            </div>
+
+                                            <span class="badge bg-success">
+                                                @sensor.Status
+                                            </span>
+
+                                        </div>
+
+                                        <hr />
+
+                                        <div class="row">
+
+                                            <div class="col-md-6 mb-2">
+                                                <small class="text-muted">
+                                                    Deployment
+                                                </small>
+
+                                                <div class="fw-semibold">
+                                                    @sensor.DeploymentLocation
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6 mb-2">
+                                                <small class="text-muted">
+                                                    Category
+                                                </small>
+
+                                                <div class="fw-semibold">
+                                                    @sensor.Category
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            }
+
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Attachment Card -->
+    <div class="card shadow-sm rounded-4 mt-4">
+        <div class="card-body p-4">
+
+            <div class="row align-items-start">
+
+                <div class="col-lg-5 mb-4 mb-lg-0">
+
+                    <span class="badge bg-primary mb-2">
+                        STEP 3
+                    </span>
+
+                    <h3 class="fw-bold">
+                        Sensor File Attachment
+                    </h3>
+
+                    <p class="text-muted">
+                        Attach configuration files, device logs,
+                        deployment photos or supporting documents
+                        to a registered IoT profile.
+                    </p>
+
+                    <div class="bg-light rounded-4 p-3">
+
+                        <strong>Supported files</strong>
+
+                        <div class="text-muted mt-1">
+                            TXT, LOG, JSON, CSV, JPG, JPEG, PNG and PDF
+                        </div>
+
+                        <div class="text-muted">
+                            Maximum file size: 10 MB
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-7">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Select Sensor
+                        </label>
+
+                        <select class="form-select"
+                                @bind="selectedSensorId">
+
+                            <option value="">
+                                Select sensor
+                            </option>
+
+                            @foreach (SensorDevice sensor in sensors)
+                            {
+                                <option value="@sensor.Id">
+                                    @sensor.Name - @sensor.MacAddress
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Select Device File
+                        </label>
+
+                        <div class="border rounded-3 p-3 bg-light">
+                            <InputFile OnChange="HandleFileSelected" />
+                        </div>
+                    </div>
+
+                    @if (selectedFile != null)
+                    {
+                        <div class="alert alert-secondary">
+
+                            <strong>Selected:</strong>
+                            @selectedFile.Name
+
+                            <br />
+
+                            <strong>Size:</strong>
+                            @FormatFileSize(selectedFile.Size)
+
+                        </div>
+                    }
+
+                    <button class="btn btn-primary"
+                            @onclick="UploadFile"
+                            disabled="@(selectedFile == null ||
+                                                                    string.IsNullOrWhiteSpace(selectedSensorId))">
+
+                        Upload Attachment
+
+                    </button>
+
+                    @if (!string.IsNullOrWhiteSpace(uploadMessage))
+                    {
+                        <div class="alert alert-info mt-3 mb-0">
+                            @uploadMessage
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer explanation -->
+    <div class="mt-4 p-4 rounded-4 bg-light border">
+
+        <h4 class="fw-bold">
+            Smart-X Data Ingestion Gateway
+        </h4>
+
+        <p class="mb-0">
+            Registered devices communicate with the ASP.NET Core API,
+            allowing Smart-X to receive multiple telemetry data types
+            and associate hardware files with individual sensor profiles.
+        </p>
+
+    </div>
+
+</div>
+
+@code {
+
+    private SensorDevice newSensor = new();
+
+    private List<SensorDevice> sensors = new();
+
+    private string message = string.Empty;
+
+    private IBrowserFile? selectedFile;
+
+    private string selectedSensorId = string.Empty;
+
+    private string uploadMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSensors();
+    }
+
+    private int OnlineSensorCount =>
+        sensors.Count(x =>
+            x.Status.Equals(
+                "Online",
+                StringComparison.OrdinalIgnoreCase));
+
+    private int CategoryCount =>
+        sensors
+            .Where(x => !string.IsNullOrWhiteSpace(x.Category))
+            .Select(x => x.Category)
+            .Distinct()
+            .Count();
+
+    private async Task RegisterSensor()
+    {
+        message = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(newSensor.MacAddress) ||
+            string.IsNullOrWhiteSpace(newSensor.Name) ||
+            string.IsNullOrWhiteSpace(newSensor.DeploymentLocation) ||
+            string.IsNullOrWhiteSpace(newSensor.Category))
+        {
+            message = "Please complete all sensor fields.";
+            return;
+        }
+
+        try
+        {
+            HttpResponseMessage response =
+                await Http.PostAsJsonAsync(
+                    "api/sensors",
+                    newSensor);
+
+            if (response.IsSuccessStatusCode)
+            {
+                message =
+                    "Sensor registered successfully.";
+
+                newSensor =
+                    new SensorDevice();
+
+                await LoadSensors();
+            }
+            else
+            {
+                string error =
+                    await response.Content.ReadAsStringAsync();
+
+                message =
+                    $"Registration failed: {error}";
+            }
+        }
+        catch (Exception ex)
+        {
+            message =
+                $"API error: {ex.Message}";
+        }
+    }
+
+    private async Task LoadSensors()
+    {
+        try
+        {
+            List<SensorDevice>? result =
+                await Http.GetFromJsonAsync<List<SensorDevice>>(
+                    "api/sensors");
+
+            sensors =
+                result ?? new();
+        }
+        catch (Exception ex)
+        {
+            sensors = new();
+
+            message =
+                $"Unable to load sensors: {ex.Message}";
+        }
+    }
+
+    private void HandleFileSelected(
+        InputFileChangeEventArgs e)
+    {
+        selectedFile =
+            e.File;
+
+        uploadMessage =
+            $"Selected: {selectedFile.Name}";
+    }
+
+    private async Task UploadFile()
+    {
+        if (selectedFile == null)
+        {
+            uploadMessage =
+                "Please select a file.";
+
+            return;
+        }
+
+        if (!Guid.TryParse(
+            selectedSensorId,
+            out Guid sensorId))
+        {
+            uploadMessage =
+                "Please select a valid sensor.";
+
+            return;
+        }
+
+        try
+        {
+            using MultipartFormDataContent content =
+                new();
+
+            await using Stream fileStream =
+                selectedFile.OpenReadStream(
+                    maxAllowedSize:
+                        10 * 1024 * 1024);
+
+            using StreamContent fileContent =
+                new(fileStream);
+
+            if (!string.IsNullOrWhiteSpace(
+                selectedFile.ContentType))
+            {
+                fileContent.Headers.ContentType =
+                    new MediaTypeHeaderValue(
+                        selectedFile.ContentType);
+            }
+
+            content.Add(
+                fileContent,
+                "file",
+                selectedFile.Name);
+
+            HttpResponseMessage response =
+                await Http.PostAsync(
+                    $"api/sensors/{sensorId}/attachments",
+                    content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                uploadMessage =
+                    $"'{selectedFile.Name}' uploaded successfully.";
+
+                selectedFile = null;
+            }
+            else
+            {
+                string error =
+                    await response.Content.ReadAsStringAsync();
+
+                uploadMessage =
+                    $"Upload failed: {error}";
+            }
+        }
+        catch (Exception ex)
+        {
+            uploadMessage =
+                $"Upload error: {ex.Message}";
+        }
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        if (bytes >= 1024 * 1024)
+        {
+            return $"{bytes / 1024d / 1024d:F2} MB";
+        }
+
+        if (bytes >= 1024)
+        {
+            return $"{bytes / 1024d:F2} KB";
+        }
+
+        return $"{bytes} bytes";
+    }
+}
