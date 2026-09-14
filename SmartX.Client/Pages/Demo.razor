@@ -1,0 +1,221 @@
+﻿@page "/demo"
+@inject HttpClient Http
+
+<PageTitle>SmartX Data Structure Demo</PageTitle>
+
+<div class="container py-4">
+
+    <div class="p-4 mb-4 bg-dark text-white rounded-4 shadow">
+        <h1 class="display-6 fw-bold">
+            SmartX C# Concepts Demo
+        </h1>
+
+        <p class="lead mb-0">
+            Demonstration of the advanced C# concepts used by
+            the SmartX telemetry gateway.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm rounded-4">
+                <div class="card-body p-4">
+
+                    <span class="badge bg-primary mb-3">
+                        GENERICS
+                    </span>
+
+                    <h4>TelemetryPacket&lt;T&gt;</h4>
+
+                    <p>
+                        Demonstrates telemetry using double,
+                        int and bool without converting values
+                        to object or string.
+                    </p>
+
+                    <button class="btn btn-primary"
+                            @onclick="TestGenerics">
+                        Run Generic Demo
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm rounded-4">
+                <div class="card-body p-4">
+
+                    <span class="badge bg-success mb-3">
+                        OPERATOR OVERLOADING
+                    </span>
+
+                    <h4>PowerReading Operators</h4>
+
+                    <p>
+                        Uses overloaded + and - operators to aggregate
+                        and compare smart meter readings.
+                    </p>
+
+                    <button class="btn btn-success"
+                            @onclick="TestOperators">
+                        Run Operator Demo
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm rounded-4">
+                <div class="card-body p-4">
+
+                    <span class="badge bg-warning text-dark mb-3">
+                        ADVANCED ARRAYS
+                    </span>
+
+                    <h4>Jagged Telemetry Batches</h4>
+
+                    <p>
+                        Processes raw double[][] telemetry batches
+                        into a generic List&lt;double&gt;.
+                    </p>
+
+                    <button class="btn btn-warning"
+                            @onclick="TestArrays">
+                        Run Array Demo
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm rounded-4">
+                <div class="card-body p-4">
+
+                    <span class="badge bg-danger mb-3">
+                        RECURSION
+                    </span>
+
+                    <h4>Deployment Validation</h4>
+
+                    <p>
+                        Recursively validates Facility → Zone →
+                        Sub-Zone → IoT Node configuration.
+                    </p>
+
+                    <button class="btn btn-danger"
+                            @onclick="TestRecursion">
+                        Run Recursive Demo
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card shadow-sm rounded-4 mt-4">
+
+        <div class="card-body p-4">
+
+            <h3 class="fw-bold">
+                Demo Output
+            </h3>
+
+            @if (string.IsNullOrWhiteSpace(result))
+            {
+                <p class="text-muted mb-0">
+                    Select one of the demonstrations above.
+                </p>
+            }
+            else
+            {
+                <pre class="bg-dark text-light rounded-3 p-3 mt-3"
+                     style="white-space: pre-wrap;">@result</pre>
+            }
+
+        </div>
+
+    </div>
+
+    <div class="card shadow-sm rounded-4 mt-4">
+        <div class="card-body p-4">
+
+            <h3 class="fw-bold">Demo Data</h3>
+
+            <p>
+                Seed realistic environmental, power and actuator
+                telemetry for demonstrating SmartX.
+            </p>
+
+            <button class="btn btn-dark"
+                    @onclick="SeedData">
+                Seed SmartX Demo Data
+            </button>
+
+        </div>
+    </div>
+
+</div>
+
+@code {
+
+    private string result = string.Empty;
+
+    private async Task CallDemo(string endpoint)
+    {
+        try
+        {
+            result =
+                await Http.GetStringAsync(
+                    $"api/demo/{endpoint}");
+        }
+        catch (Exception ex)
+        {
+            result =
+                $"Demo failed: {ex.Message}";
+        }
+    }
+
+    private Task TestGenerics()
+    {
+        return CallDemo("generics");
+    }
+
+    private Task TestOperators()
+    {
+        return CallDemo("operator-overloading");
+    }
+
+    private Task TestArrays()
+    {
+        return CallDemo("telemetry-batches");
+    }
+
+    private Task TestRecursion()
+    {
+        return CallDemo("recursive-validation");
+    }
+
+    private async Task SeedData()
+    {
+        try
+        {
+            HttpResponseMessage response =
+                await Http.PostAsync(
+                    "api/demo/seed",
+                    null);
+
+            result =
+                await response.Content.ReadAsStringAsync();
+        }
+        catch (Exception ex)
+        {
+            result =
+                $"Seeding failed: {ex.Message}";
+        }
+    }
+}

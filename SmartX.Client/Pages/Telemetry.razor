@@ -5,7 +5,7 @@
 @using System.Net.Http.Headers
 @inject HttpClient Http
 
-<PageTitle>Smart-X Telemetry</PageTitle>
+<PageTitle>SmartX Telemetry</PageTitle>
 
 <div class="container py-4">
 
@@ -18,8 +18,8 @@
                 </h1>
 
                 <p class="lead mb-0">
-                    Register Smart-X IoT devices, manage deployment details,
-                    and attach configuration or diagnostic files.
+                    Register SmartX IoT devices, manage deployment details,
+                    capture telemetry readings and attach supporting files.
                 </p>
             </div>
 
@@ -76,7 +76,7 @@
                     </h2>
 
                     <p class="text-muted mb-0">
-                        Smart-X sensor groups
+                        SmartX sensor groups
                     </p>
                 </div>
             </div>
@@ -102,7 +102,7 @@
                         </h3>
 
                         <p class="text-muted">
-                            Add a simulated ESP32 or Smart-X compatible IoT device.
+                            Add a simulated ESP32 or SmartX compatible IoT device.
                         </p>
                     </div>
 
@@ -165,7 +165,7 @@
 
                     <button class="btn btn-success w-100"
                             @onclick="RegisterSensor">
-                        Register Smart-X Sensor
+                        Register SmartX Sensor
                     </button>
 
                     @if (!string.IsNullOrWhiteSpace(message))
@@ -198,7 +198,7 @@
                             </h3>
 
                             <p class="text-muted mb-0">
-                                Devices currently connected to the Smart-X gateway.
+                                Devices currently connected to the SmartX gateway.
                             </p>
                         </div>
 
@@ -216,7 +216,7 @@
                             <h5>No sensors registered</h5>
 
                             <p class="text-muted mb-0">
-                                Register your first Smart-X device using the form.
+                                Register your first SmartX device using the form.
                             </p>
 
                         </div>
@@ -290,6 +290,163 @@
 
     </div>
 
+    <!-- Telemetry Capture -->
+    <div class="card shadow-sm rounded-4 mt-4">
+        <div class="card-body p-4">
+
+            <div class="row align-items-start">
+
+                <div class="col-lg-5 mb-4 mb-lg-0">
+
+                    <span class="badge bg-warning text-dark mb-2">
+                        STEP 3
+                    </span>
+
+                    <h3 class="fw-bold">
+                        Capture Telemetry
+                    </h3>
+
+                    <p class="text-muted">
+                        Submit simulated telemetry readings from a registered
+                        SmartX IoT sensor to the ingestion gateway.
+                    </p>
+
+                    <div class="bg-light rounded-4 p-3">
+                        <strong>Supported telemetry types</strong>
+
+                        <div class="text-muted mt-2">
+                            Double — temperature, moisture and voltage
+                        </div>
+
+                        <div class="text-muted">
+                            Integer — power consumption and counters
+                        </div>
+
+                        <div class="text-muted">
+                            Boolean — valve, relay and actuator states
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-lg-7">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Select Sensor
+                        </label>
+
+                        <select class="form-select"
+                                @bind="selectedTelemetrySensorId">
+
+                            <option value="">
+                                Select sensor
+                            </option>
+
+                            @foreach (SensorDevice sensor in sensors)
+                            {
+                                <option value="@sensor.Id">
+                                    @sensor.Name - @sensor.MacAddress
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Telemetry Type
+                        </label>
+
+                        <select class="form-select"
+                                @bind="telemetryType">
+
+                            <option value="double">
+                                Double
+                            </option>
+
+                            <option value="integer">
+                                Integer
+                            </option>
+
+                            <option value="boolean">
+                                Boolean
+                            </option>
+
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Metric
+                        </label>
+
+                        <input class="form-control"
+                               placeholder="Example: Soil Moisture"
+                               @bind="telemetryMetric" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Value
+                        </label>
+
+                        @if (telemetryType == "boolean")
+                        {
+                            <select class="form-select"
+                                    @bind="telemetryValue">
+
+                                <option value="">
+                                    Select state
+                                </option>
+
+                                <option value="true">
+                                    True / ON
+                                </option>
+
+                                <option value="false">
+                                    False / OFF
+                                </option>
+
+                            </select>
+                        }
+                        else
+                        {
+                            <input class="form-control"
+                                   placeholder="Example: 61.4"
+                                   @bind="telemetryValue" />
+                        }
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            Unit
+                        </label>
+
+                        <input class="form-control"
+                               placeholder="Example: %, °C, W"
+                               @bind="telemetryUnit" />
+                    </div>
+
+                    <button class="btn btn-warning"
+                            @onclick="SubmitTelemetry">
+                        Submit Telemetry
+                    </button>
+
+                    @if (!string.IsNullOrWhiteSpace(telemetryMessage))
+                    {
+                        <div class="alert alert-info mt-3 mb-0">
+                            @telemetryMessage
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
     <!-- Attachment Card -->
     <div class="card shadow-sm rounded-4 mt-4">
         <div class="card-body p-4">
@@ -299,7 +456,7 @@
                 <div class="col-lg-5 mb-4 mb-lg-0">
 
                     <span class="badge bg-primary mb-2">
-                        STEP 3
+                        STEP 4
                     </span>
 
                     <h3 class="fw-bold">
@@ -404,13 +561,14 @@
     <div class="mt-4 p-4 rounded-4 bg-light border">
 
         <h4 class="fw-bold">
-            Smart-X Data Ingestion Gateway
+            SmartX Data Ingestion Gateway
         </h4>
 
         <p class="mb-0">
             Registered devices communicate with the ASP.NET Core API,
-            allowing Smart-X to receive multiple telemetry data types
-            and associate hardware files with individual sensor profiles.
+            allowing SmartX to receive multiple telemetry data types,
+            monitor device behaviour and associate supporting files
+            with individual sensor profiles.
         </p>
 
     </div>
@@ -430,6 +588,18 @@
     private string selectedSensorId = string.Empty;
 
     private string uploadMessage = string.Empty;
+
+    private string selectedTelemetrySensorId = string.Empty;
+
+    private string telemetryType = "double";
+
+    private string telemetryMetric = string.Empty;
+
+    private string telemetryValue = string.Empty;
+
+    private string telemetryUnit = string.Empty;
+
+    private string telemetryMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -512,6 +682,141 @@
 
             message =
                 $"Unable to load sensors: {ex.Message}";
+        }
+    }
+
+    private async Task SubmitTelemetry()
+    {
+        telemetryMessage = string.Empty;
+
+        if (!Guid.TryParse(
+            selectedTelemetrySensorId,
+            out Guid sensorId))
+        {
+            telemetryMessage =
+                "Please select a registered sensor.";
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(telemetryMetric))
+        {
+            telemetryMessage =
+                "Please enter a telemetry metric.";
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(telemetryValue))
+        {
+            telemetryMessage =
+                "Please enter a telemetry value.";
+
+            return;
+        }
+
+        try
+        {
+            HttpResponseMessage response;
+
+            if (telemetryType == "double")
+            {
+                if (!double.TryParse(
+                    telemetryValue,
+                    out double doubleValue))
+                {
+                    telemetryMessage =
+                        "Please enter a valid decimal value.";
+
+                    return;
+                }
+
+                TelemetryPacket<double> packet = new()
+                {
+                    DeviceId = sensorId.ToString(),
+                    Metric = telemetryMetric,
+                    Value = doubleValue,
+                    Unit = telemetryUnit
+                };
+
+                response =
+                    await Http.PostAsJsonAsync(
+                        "api/telemetry/double",
+                        packet);
+            }
+            else if (telemetryType == "integer")
+            {
+                if (!int.TryParse(
+                    telemetryValue,
+                    out int integerValue))
+                {
+                    telemetryMessage =
+                        "Please enter a valid whole number.";
+
+                    return;
+                }
+
+                TelemetryPacket<int> packet = new()
+                {
+                    DeviceId = sensorId.ToString(),
+                    Metric = telemetryMetric,
+                    Value = integerValue,
+                    Unit = telemetryUnit
+                };
+
+                response =
+                    await Http.PostAsJsonAsync(
+                        "api/telemetry/integer",
+                        packet);
+            }
+            else
+            {
+                if (!bool.TryParse(
+                    telemetryValue,
+                    out bool booleanValue))
+                {
+                    telemetryMessage =
+                        "Please select True or False.";
+
+                    return;
+                }
+
+                TelemetryPacket<bool> packet = new()
+                {
+                    DeviceId = sensorId.ToString(),
+                    Metric = telemetryMetric,
+                    Value = booleanValue,
+                    Unit = telemetryUnit
+                };
+
+                response =
+                    await Http.PostAsJsonAsync(
+                        "api/telemetry/boolean",
+                        packet);
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                telemetryMessage =
+                    "Telemetry submitted successfully.";
+
+                telemetryMetric = string.Empty;
+                telemetryValue = string.Empty;
+                telemetryUnit = string.Empty;
+            }
+            else
+            {
+                string error =
+                    await response.Content.ReadAsStringAsync();
+
+                telemetryMessage =
+                    $"Telemetry submission failed: {error}";
+            }
+        }
+        catch (Exception ex)
+        {
+            telemetryMessage =
+                $"Telemetry API error: {ex.Message}";
         }
     }
 
