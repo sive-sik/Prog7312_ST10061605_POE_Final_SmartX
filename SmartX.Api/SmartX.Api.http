@@ -1,6 +1,69 @@
-@SmartX.Api_HostAddress = http://localhost:5182
+@SmartX_Api_HostAddress = http://localhost:5182
 
-GET {{SmartX.Api_HostAddress}}/weatherforecast/
+### Register environmental sensor
+
+POST {{SmartX_Api_HostAddress}}/api/sensors
+Content-Type: application/json
+
+{
+  "macAddress": "AA:BB:CC:DD:EE:01",
+  "name": "Hydroponics Moisture Sensor 01",
+  "deploymentLocation": "Facility A / Zone 1 / Sub-Zone B",
+  "category": "Environmental"
+}
+
+###
+
+### Get all registered sensors
+
+GET {{SmartX_Api_HostAddress}}/api/sensors
 Accept: application/json
 
 ###
+
+### Send soil moisture telemetry
+
+POST {{SmartX_Api_HostAddress}}/api/telemetry/double
+Content-Type: application/json
+
+{
+  "deviceId": "f6c0e47a-1fb4-48cb-b8ad-2e8f0997076a",
+  "metric": "Soil Moisture",
+  "value": 61.4,
+  "unit": "%"
+}
+
+###
+
+### Send power telemetry
+
+POST {{SmartX_Api_HostAddress}}/api/telemetry/integer
+Content-Type: application/json
+
+{
+  "deviceId": "f6c0e47a-1fb4-48cb-b8ad-2e8f0997076a",
+  "metric": "Power Consumption",
+  "value": 1380,
+  "unit": "W"
+}
+
+###
+
+### Send valve state telemetry
+
+POST {{SmartX_Api_HostAddress}}/api/telemetry/boolean
+Content-Type: application/json
+
+{
+  "deviceId": "f6c0e47a-1fb4-48cb-b8ad-2e8f0997076a",
+  "metric": "Valve State",
+  "value": true,
+  "unit": "Open/Closed"
+}
+
+###
+
+### Get all telemetry
+
+GET {{SmartX_Api_HostAddress}}/api/telemetry
+Accept: application/json
