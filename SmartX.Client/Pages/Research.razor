@@ -6,245 +6,294 @@
 
     <section class="research-hero">
         <div>
-            <span class="research-label">PROG7312 Research Report</span>
-            <h1>SmartX Application Research</h1>
+            <span class="research-label">ST10061605 | PROG7312</span>
+
+            <h1>Task 1 – Research</h1>
+
             <p class="lead">
-                Exploring application telemetry, monitoring, security and the use of
-                modern web technologies within the SmartX application.
+                SmartX IoT Dashboard: Engagement and Interactivity Strategies
             </p>
         </div>
     </section>
 
     <section class="report-section">
-        <h2>1. Introduction</h2>
+
+        <h2>SmartX IoT Dashboard: Engagement and Interactivity Strategies</h2>
 
         <p>
-            Modern software applications require more than functional user interfaces
-            and business logic. Developers must also consider application performance,
-            reliability, security and the ability to understand how users interact with
-            the system. One approach to achieving this is through application telemetry,
-            which involves collecting operational information such as requests, errors,
-            performance measurements and application events.
+            IoT dashboards must do more than display raw sensor readings. They should help users
+            notice abnormal behaviour, understand what is happening and decide what action to take.
+            Research in visual analytics shows that anomaly information can be emphasised to direct
+            attention to important sensor events [1], interactive analysis can support diagnosis [2],
+            and explanatory feedback can help users investigate the physical cause of an anomaly [3].
+            Five strategies were therefore considered for SmartX.
         </p>
 
-        <p>
-            SmartX was developed using ASP.NET Core and Blazor. Blazor provides a
-            component-based approach for developing interactive web applications using
-            C# and .NET rather than requiring JavaScript for the majority of application
-            logic (Microsoft, 2026a). This makes it suitable for integrating application
-            features, monitoring functionality and reusable user-interface components
-            within a single .NET ecosystem.
-        </p>
     </section>
 
     <section class="report-section">
-        <h2>2. Application Telemetry</h2>
 
-        <p>
-            Telemetry refers to information that an application records and sends to a
-            monitoring platform so that developers can understand the behaviour and
-            health of the system. Typical telemetry information includes application
-            requests, response times, exceptions, dependencies, logs and custom events.
-        </p>
+        <h2>Five Engagement and Interactivity Strategies</h2>
 
-        <p>
-            Microsoft Application Insights supports standard, log-based and custom
-            metrics. Custom telemetry is particularly useful when developers need to
-            monitor information that is specific to the application's requirements
-            (Microsoft, 2026b). In SmartX, telemetry can therefore be used to record
-            important application activities and provide information that would help
-            identify failures or performance problems.
-        </p>
-
-        <div class="info-card">
-            <h3>Examples of SmartX Telemetry</h3>
-
-            <div class="telemetry-grid">
-                <div class="telemetry-item">
-                    <strong>Requests</strong>
-                    <span>Tracks interactions with the application.</span>
-                </div>
-
-                <div class="telemetry-item">
-                    <strong>Performance</strong>
-                    <span>Measures how quickly operations are completed.</span>
-                </div>
-
-                <div class="telemetry-item">
-                    <strong>Exceptions</strong>
-                    <span>Identifies application errors and failures.</span>
-                </div>
-
-                <div class="telemetry-item">
-                    <strong>Custom Events</strong>
-                    <span>Records important SmartX-specific actions.</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="report-section">
-        <h2>3. Benefits of Monitoring</h2>
-
-        <p>
-            Monitoring provides developers with visibility into an application after
-            deployment. Instead of relying only on user reports, telemetry allows
-            technical teams to observe behaviour and investigate problems using
-            collected information.
-        </p>
-
-        <p>
-            Application Insights can automatically collect traces, metrics, logs and
-            exceptions through OpenTelemetry instrumentation (Microsoft, 2026b).
-            This supports proactive application maintenance because failures,
-            performance degradation and unusual activity can be identified from the
-            telemetry generated by the system.
-        </p>
-
-        <div class="benefit-list">
-            <div>
-                <span class="number">01</span>
-                <div>
-                    <h3>Performance Analysis</h3>
-                    <p>
-                        Developers can identify slow operations and areas of the
-                        application that may require optimisation.
-                    </p>
-                </div>
-            </div>
+        <div class="strategy-card">
+            <div class="strategy-number">1</div>
 
             <div>
-                <span class="number">02</span>
-                <div>
-                    <h3>Error Detection</h3>
-                    <p>
-                        Exceptions and failed requests can be identified and investigated
-                        before they significantly affect users.
-                    </p>
-                </div>
+                <h3>Severity-Based Anomaly Highlighting</h3>
+
+                <p>
+                    Device conditions can be classified as Healthy, Warning or Critical so that abnormal
+                    states receive greater visual emphasis. Janetzko et al. [1] show that highlighting
+                    anomaly information helps analysts focus on important parts of large sensor datasets.
+                    In SmartX this can quickly draw attention to low soil moisture, high power use or
+                    missing telemetry.
+                </p>
             </div>
+        </div>
+
+        <div class="strategy-card">
+            <div class="strategy-number">2</div>
 
             <div>
-                <span class="number">03</span>
-                <div>
-                    <h3>Usage Insights</h3>
-                    <p>
-                        Custom events can provide information about how application
-                        features are being used.
-                    </p>
-                </div>
+                <h3>Interactive Device Inspection and Drill-Down</h3>
+
+                <p>
+                    A high-level dashboard should allow the operator to inspect an individual device when
+                    more detail is required. Xu et al. [2] demonstrate that interactive visual analytics
+                    can support both detection and diagnosis. SmartX therefore presents device-specific
+                    details such as name, MAC address, deployment location, latest metric and health status.
+                </p>
             </div>
         </div>
-    </section>
 
-    <section class="report-section">
-        <h2>4. Security Considerations</h2>
+        <div class="strategy-card">
+            <div class="strategy-number">3</div>
 
-        <p>
-            Telemetry must be implemented responsibly because application monitoring
-            systems may process information about users, requests and system activity.
-            Developers should avoid recording passwords, authentication secrets and
-            unnecessary personally identifiable information within application logs.
-        </p>
+            <div>
+                <h3>Current Telemetry and Status Visualisation</h3>
 
-        <p>
-            Security monitoring should form part of the broader risk-management process
-            of an organisation. The NIST Cybersecurity Framework 2.0 provides guidance
-            for organisations to understand, assess, prioritise and communicate
-            cybersecurity risks (Pascoe, Quinn &amp; Scarfone, 2024). Monitoring and
-            logging contribute to this objective by improving visibility into events
-            occurring within an information system.
-        </p>
-
-        <div class="warning-card">
-            <h3>Telemetry Data Should Not Include</h3>
-            <p>
-                Passwords, authentication tokens, financial information or unnecessary
-                sensitive personal information should not be recorded as normal
-                application telemetry.
-            </p>
+                <p>
+                    Showing the latest meaningful reading helps the user understand why a device has a
+                    particular status. Sensor values such as soil moisture, temperature, power consumption
+                    and valve state can be interpreted more easily when displayed together with the device
+                    condition [1].
+                </p>
+            </div>
         </div>
+
+        <div class="strategy-card">
+            <div class="strategy-number">4</div>
+
+            <div>
+                <h3>Context-Aware Explanations and Guided Troubleshooting</h3>
+
+                <p>
+                    A warning becomes more useful when the system also explains the likely reason and
+                    recommends a next step. Patabendige et al. [3] used anomaly explanations to help users
+                    investigate unusual smart-water behaviour. SmartX applies the same principle by
+                    providing guidance such as checking irrigation, sensor placement, device power or
+                    network connectivity.
+                </p>
+            </div>
+        </div>
+
+        <div class="strategy-card">
+            <div class="strategy-number">5</div>
+
+            <div>
+                <h3>Action-Oriented Interaction</h3>
+
+                <p>
+                    Engagement should lead to useful action rather than only visual appeal. SmartX connects
+                    device registration, telemetry ingestion, health classification and troubleshooting
+                    guidance. This allows a user to submit data, observe the system response and decide what
+                    to investigate next, supporting the human-in-the-loop approach described in interactive
+                    anomaly analysis [2], [3].
+                </p>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="report-section selected-strategy">
+
+        <h2>Selected Strategy for SmartX</h2>
+
+        <div class="selected-title">
+            Severity-Based Contextual Anomaly Highlighting with Guided Troubleshooting
+        </div>
+
+        <p>
+            The primary engagement strategy selected for SmartX is severity-based contextual anomaly
+            highlighting combined with guided troubleshooting. This strategy was chosen because SmartX
+            is intended for technical monitoring of connected sensors, where the most important task is
+            not simply displaying data but helping an operator recognise abnormal conditions and decide
+            what should happen next.
+        </p>
+
+        <p>
+            IoT systems can generate many readings from environmental sensors, power meters and actuators.
+            If every value is presented with equal visual importance, the operator must continually inspect
+            each reading and decide manually whether it is normal. This increases cognitive effort and makes
+            important events easier to miss. Janetzko et al. [1] demonstrate how anomaly information can be
+            visually emphasised to guide analysts toward meaningful areas of sensor data. SmartX applies this
+            idea at device level by using Healthy, Warning and Critical states. Normal devices can remain
+            visually unobtrusive while abnormal devices immediately receive attention.
+        </p>
+
+        <p>
+            Highlighting alone is not enough. A technical user also needs to understand why the device has
+            entered an abnormal state. Xu et al. [2] show the value of interactive visual analytics for both
+            detecting and diagnosing unusual behaviour. SmartX therefore presents contextual information
+            alongside the status, including the device name, location, latest metric, latest reading and last
+            contact time. This allows the operator to connect the classification to a real device and an
+            observable condition instead of treating the alert as an isolated message.
+        </p>
+
+        <p>
+            The final part of the strategy is guided troubleshooting. Patabendige et al. [3] demonstrate the
+            value of providing a rationale that helps users investigate the physical cause of an anomaly.
+            SmartX follows this principle by pairing its health classification with a recommendation. A
+            critically low soil-moisture reading can prompt the user to inspect irrigation or sensor placement,
+            while a telemetry timeout can recommend checking power, network connectivity and gateway
+            registration. The interface therefore supports the next practical action rather than stopping at
+            detection.
+        </p>
+
+        <p>
+            This strategy also makes the dashboard more engaging because it reacts visibly to incoming
+            telemetry. When a reading changes, the device state and the recommended response can change as
+            well. This creates a direct relationship between data ingestion, system analysis and user action.
+            The chosen strategy therefore supports three essential activities: awareness, interpretation and
+            response. Severity indicators create awareness, contextual telemetry supports interpretation, and
+            troubleshooting guidance helps the operator respond appropriately.
+        </p>
+
     </section>
 
     <section class="report-section">
-        <h2>5. Application of Research to SmartX</h2>
+
+        <h2>Application in SmartX</h2>
 
         <p>
-            The research directly influences the implementation of SmartX. The
-            application provides a dedicated telemetry area where operational
-            information can be viewed rather than leaving monitoring as an external
-            concept that is disconnected from the software.
+            SmartX implements the strategy across the Sensor Data and Device Health sections. A user registers
+            a device and submits double, integer or Boolean telemetry through the ingestion gateway. The health
+            logic then evaluates the latest reading and can classify the device as Healthy, Warning or Critical.
+            Low soil moisture, excessive power consumption and communication timeouts can therefore produce
+            different states and recommendations.
         </p>
 
-        <p>
-            Incorporating telemetry into SmartX demonstrates an understanding that
-            application development continues after the implementation of core
-            functionality. A production-ready system should provide mechanisms for
-            identifying errors, observing performance and understanding significant
-            application events.
+        <div class="workflow">
+
+            <div class="workflow-step">
+                <div class="workflow-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2a5 5 0 0 0-5 5v2H5a2 2 0 0 0-2 2v9h18v-9a2 2 0 0 0-2-2h-2V7a5 5 0 0 0-5-5Zm-3 7V7a3 3 0 0 1 6 0v2H9Z" />
+                    </svg>
+                </div>
+
+                <strong>Registered SmartX Sensor</strong>
+            </div>
+
+            <div class="workflow-arrow">→</div>
+
+            <div class="workflow-step">
+                <div class="workflow-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 4h16v4H4V4Zm0 6h16v4H4v-4Zm0 6h16v4H4v-4Z" />
+                    </svg>
+                </div>
+
+                <strong>Telemetry Ingestion API - double / int / bool</strong>
+            </div>
+
+            <div class="workflow-arrow">→</div>
+
+            <div class="workflow-step">
+                <div class="workflow-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2 3 5v6c0 5.5 3.8 10.6 9 12 5.2-1.4 9-6.5 9-12V5l-9-3Zm-1 15-4-4 1.4-1.4L11 14.2l5.6-5.6L18 10l-7 7Z" />
+                    </svg>
+                </div>
+
+                <strong>Device Health Logic - Healthy / Warning / Critical</strong>
+            </div>
+
+            <div class="workflow-arrow">→</div>
+
+            <div class="workflow-step">
+                <div class="workflow-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9 21h6v-1H9v1Zm3-19a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Zm2.8 11.2-.8.6V15h-4v-1.2l-.8-.6A5 5 0 1 1 14.8 13.2Z" />
+                    </svg>
+                </div>
+
+                <strong>Contextual Guidance - explain condition and recommend action</strong>
+            </div>
+
+        </div>
+
+        <p class="figure-caption">
+            Figure 1: SmartX anomaly highlighting and guided troubleshooting workflow.
         </p>
 
-        <p>
-            The use of Blazor also allows the telemetry interface to remain consistent
-            with the rest of the application. Reusable Razor components, C# code and
-            the existing navigation structure can be used to expose monitoring
-            information without introducing an entirely separate front-end technology.
-        </p>
     </section>
 
     <section class="report-section">
-        <h2>6. Conclusion</h2>
+
+        <h2>Conclusion</h2>
 
         <p>
-            Application telemetry is an important component of reliable software
-            development because it provides measurable information about application
-            health, behaviour and failures. Microsoft Application Insights and
-            OpenTelemetry provide technologies that can collect metrics, traces, logs,
-            exceptions and custom application events.
+            The five strategies considered for SmartX were severity-based highlighting, device drill-down,
+            current telemetry visualisation, guided troubleshooting and action-oriented interaction. Research
+            supports anomaly emphasis [1], interactive diagnosis [2] and explanatory feedback [3]. SmartX
+            therefore uses severity-based contextual anomaly highlighting with guided troubleshooting to turn
+            raw telemetry into meaningful device states and practical user guidance.
         </p>
 
-        <p>
-            For SmartX, telemetry strengthens the application by supporting performance
-            monitoring, fault detection and informed maintenance decisions. However,
-            monitoring must be implemented together with appropriate security and
-            privacy practices. Combining Blazor, telemetry and cybersecurity principles
-            therefore contributes towards a more maintainable, observable and secure
-            application.
-        </p>
     </section>
 
     <section class="report-section references">
-        <h2>References</h2>
+
+        <h2>Reference List</h2>
 
         <div class="reference-item">
             <span>[1]</span>
+
             <p>
-                Microsoft. (2026a). <em>ASP.NET Core Blazor.</em>
-                Microsoft Learn.
+                H. Janetzko, F. Stoffel, S. Mittelstädt and D. A. Keim, “Anomaly detection for visual analytics
+                of power consumption data,” <em>Computers &amp; Graphics</em>, vol. 38, pp. 27–37, Feb. 2014,
+                doi: 10.1016/j.cag.2013.10.006.
             </p>
         </div>
 
         <div class="reference-item">
             <span>[2]</span>
+
             <p>
-                Microsoft. (2026b). <em>Enable OpenTelemetry in Application Insights.</em>
-                Azure Monitor, Microsoft Learn.
+                K. Xu, Y. Wang, L. Yang, Y. Wang, B. Qiao, S. Qin, Y. Xu, H. Zhang and H. Qu, “CloudDet:
+                Interactive visual analysis of anomalous performances in cloud computing systems,”
+                <em>IEEE Transactions on Visualization and Computer Graphics</em>, vol. 26, no. 1,
+                pp. 1107–1117, Jan. 2020, doi: 10.1109/TVCG.2019.2934613.
             </p>
         </div>
 
         <div class="reference-item">
             <span>[3]</span>
+
             <p>
-                Pascoe, C., Quinn, S. &amp; Scarfone, K. (2024).
-                <em>The NIST Cybersecurity Framework (CSF) 2.0.</em>
-                National Institute of Standards and Technology.
+                S. Patabendige, R. Cardell-Oliver, R. Wang and W. Liu, “Detection and interpretation of
+                anomalous water use for non-residential customers,” <em>Environmental Modelling &amp; Software</em>,
+                vol. 100, pp. 291–301, Feb. 2018, doi: 10.1016/j.envsoft.2017.11.028.
             </p>
         </div>
+
     </section>
 
 </div>
 
 <style>
+
     .research-page {
         max-width: 1100px;
         margin: 0 auto;
@@ -272,15 +321,15 @@
     }
 
     .research-hero h1 {
-        margin-bottom: 1rem;
+        margin-bottom: .75rem;
         font-size: clamp(2rem, 5vw, 3.4rem);
         font-weight: 700;
     }
 
     .research-hero .lead {
-        max-width: 750px;
+        max-width: 780px;
         margin: 0;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         line-height: 1.8;
         color: #d9e2ec;
     }
@@ -304,9 +353,10 @@
         }
 
         .report-section h3 {
+            margin-bottom: .5rem;
             color: #243b53;
-            font-size: 1.05rem;
-            font-weight: 650;
+            font-size: 1.08rem;
+            font-weight: 700;
         }
 
         .report-section p {
@@ -315,79 +365,102 @@
             line-height: 1.85;
         }
 
-    .info-card {
-        margin-top: 1.5rem;
+    .strategy-card {
+        display: flex;
+        gap: 1.25rem;
+        margin-bottom: 1rem;
+        padding: 1.35rem;
+        border-radius: 12px;
+        background: #f8fafc;
+        border: 1px solid #edf1f5;
+    }
+
+    .strategy-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        border-radius: 50%;
+        background: #243b53;
+        color: white;
+        font-weight: 700;
+    }
+
+    .strategy-card p {
+        margin-bottom: 0;
+    }
+
+    .selected-strategy {
+        border-top: 4px solid #486581;
+    }
+
+    .selected-title {
+        margin-bottom: 1.5rem;
+        padding: 1rem 1.25rem;
+        border-radius: 10px;
+        background: #edf4fa;
+        color: #102a43;
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+
+    .workflow {
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        gap: .75rem;
+        margin-top: 2rem;
         padding: 1.5rem;
         border-radius: 14px;
         background: #f5f8fc;
     }
 
-    .telemetry-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-        margin-top: 1rem;
-    }
-
-    .telemetry-item {
-        display: flex;
-        flex-direction: column;
-        gap: .35rem;
-        padding: 1rem;
-        border-radius: 10px;
+    .workflow-step {
+        flex: 1;
+        min-width: 0;
+        padding: 1.25rem;
+        text-align: center;
+        border-radius: 12px;
         background: white;
+        border: 1px solid #e4e9ee;
+        color: #243b53;
     }
 
-        .telemetry-item strong {
-            color: #102a43;
-        }
-
-        .telemetry-item span {
-            color: #627d98;
-            font-size: .92rem;
-        }
-
-    .benefit-list {
-        margin-top: 1.5rem;
+    .workflow-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        margin: 0 auto .8rem;
+        border-radius: 50%;
+        background: #edf4fa;
     }
 
-        .benefit-list > div {
-            display: flex;
-            gap: 1.2rem;
-            padding: 1.25rem 0;
-            border-bottom: 1px solid #edf0f2;
+        .workflow-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: #243b53;
         }
 
-            .benefit-list > div:last-child {
-                border-bottom: none;
-            }
-
-        .benefit-list p {
-            margin: .3rem 0 0;
-        }
-
-    .number {
-        min-width: 45px;
-        color: #486581;
-        font-size: 1.1rem;
+    .workflow-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #627d98;
+        font-size: 1.6rem;
         font-weight: 700;
     }
 
-    .warning-card {
-        margin-top: 1.5rem;
-        padding: 1.4rem;
-        border-left: 4px solid #d97706;
-        border-radius: 8px;
-        background: #fffaf0;
+    .figure-caption {
+        margin-top: 1rem;
+        text-align: center;
+        font-size: .9rem !important;
+        font-style: italic;
+        color: #7b8794 !important;
     }
-
-        .warning-card h3 {
-            color: #92400e;
-        }
-
-        .warning-card p {
-            margin-bottom: 0;
-        }
 
     .references {
         background: #f8fafc;
@@ -396,11 +469,12 @@
     .reference-item {
         display: flex;
         gap: 1rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.25rem;
     }
 
         .reference-item span {
-            color: #486581;
+            min-width: 30px;
+            color: #243b53;
             font-weight: 700;
         }
 
@@ -408,7 +482,19 @@
             margin: 0;
         }
 
+    @@media (max-width: 900px) {
+
+        .workflow {
+            flex-direction: column;
+        }
+
+        .workflow-arrow {
+            transform: rotate(90deg);
+        }
+    }
+
     @@media (max-width: 700px) {
+
         .research-page {
             padding: 1rem;
         }
@@ -421,8 +507,9 @@
             padding: 1.4rem;
         }
 
-        .telemetry-grid {
-            grid-template-columns: 1fr;
+        .strategy-card {
+            flex-direction: column;
         }
     }
+
 </style>
