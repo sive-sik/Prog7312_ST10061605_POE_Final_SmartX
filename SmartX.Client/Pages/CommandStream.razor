@@ -1,0 +1,413 @@
+@page "/command-stream"
+@using SmartX.Core.Models
+@inject HttpClient Http
+
+<PageTitle>SmartX Real-Time Command Stream</PageTitle>
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h1 class="fw-bold">Real-Time Command Stream &amp; History</h1>
+            <p class="text-muted mb-0">Monitor live telemetry, review alerts and issue manual device commands.</p>
+        </div>
+        <button class="btn btn-primary" disabled="@isLoading" @onclick="RefreshDashboard">Refresh Dashboard</button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">@errorMessage</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="alert alert-success" role="status">@successMessage</div>
+    }
+    @if (isLoading)
+    {
+        <p class="text-muted" role="status">Loading dashboard...</p>
+    }
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-5 g-3 mb-4">
+        <div class="col"><div class="card shadow-sm h-100"><div class="card-body">
+            <h6 class="text-muted">Registered Devices</h6><h2 class="fw-bold mb-0">@stats.DeviceCount</h2>
+        </div></div></div>
+        <div class="col"><div class="card shadow-sm h-100"><div class="card-body">
+            <h6 class="text-muted">Standard Queue</h6><h2 class="fw-bold mb-0">@stats.NormalQueueCount</h2>
+        </div></div></div>
+        <div class="col"><div class="card shadow-sm border-danger h-100"><div class="card-body">
+            <h6 class="text-muted">Priority Alerts</h6><h2 class="fw-bold text-danger mb-0">@stats.CriticalQueueCount</h2>
+        </div></div></div>
+        <div class="col"><div class="card shadow-sm border-warning h-100"><div class="card-body">
+            <h6 class="text-muted">Active Alerts</h6><h2 class="fw-bold mb-0">@stats.ActiveAlertCount</h2>
+        </div></div></div>
+        <div class="col"><div class="card shadow-sm h-100"><div class="card-body">
+            <h6 class="text-muted">Command History</h6><h2 class="fw-bold mb-0">@stats.CommandHistoryCount</h2>
+        </div></div></div>
+    </div>
+
+    <fieldset disabled="@isLoading">
+        <legend class="visually-hidden">Dashboard controls</legend>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div>
+                    <h5>Telemetry Processing</h5>
+                    <p class="text-muted mb-0">Seed demo packets, then process them one at a time. Critical alerts are processed first.</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-outline-primary" @onclick="SeedDemo">Seed Part 2 Demo Data</button>
+                    <button class="btn btn-primary" @onclick="ProcessNext">Process Next Telemetry</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-7">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-dark text-white"><h5 class="mb-0">Registered Devices</h5></div>
+                    <div class="card-body">
+                        <form @onsubmit="ApplyFilters" @onsubmit:preventDefault>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="device-search" class="form-label">Search devices</label>
+                                    <input id="device-search" class="form-control" placeholder="Name, MAC address or location" @bind="search" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="device-category" class="form-label">Category</label>
+                                    <select id="device-category" class="form-select" @bind="category">
+                                        <option value="">All categories</option>
+                                        @foreach (string option in categories)
+                                        {
+                                            <option value="@option">@option</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-12 d-flex flex-wrap align-items-center gap-3">
+                                    <div class="form-check">
+                                        <input id="alert-only" type="checkbox" class="form-check-input" @bind="alertOnly" />
+                                        <label for="alert-only" class="form-check-label">Active alerts only</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-outline-primary">Apply Filters</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        @if (allDevices.Count == 0)
+                        {
+                            <p class="text-muted mb-0">No devices registered. Register a sensor in <a href="/telemetry">Sensor Data</a> first.</p>
+                        }
+                        else if (devices.Count == 0)
+                        {
+                            <p class="text-muted mb-0">No devices match these filters. Try another search or category.</p>
+                        }
+                        @foreach (SensorDevice device in devices)
+                        {
+                            <div class="border rounded p-3 mb-3 @(selectedDevice?.Id == device.Id ? "border-primary bg-light" : "")">
+                                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                                    <div>
+                                        <h6 class="fw-bold mb-1">@device.Name</h6>
+                                        <div class="text-muted small">@device.MacAddress</div>
+                                        <div>@device.DeploymentLocation</div>
+                                    </div>
+                                    <span class="badge @(alertSensorIds.Contains(device.Id) ? "bg-warning text-dark" : "bg-success")">
+                                        @(alertSensorIds.Contains(device.Id) ? "Active Alert" : "No Active Alert")
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-2 gap-2">
+                                    <span class="badge bg-secondary">@device.Category</span>
+                                    <button class="btn btn-sm btn-outline-primary" @onclick="() => selectedDevice = device">
+                                        @(selectedDevice?.Id == device.Id ? "Selected" : "Select")
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-dark text-white"><h5 class="mb-0">Manual Override Commands</h5></div>
+                    <div class="card-body">
+                        @if (selectedDevice == null)
+                        {
+                            <p class="text-muted">Select a device to issue a manual command.</p>
+                        }
+                        else
+                        {
+                            <h6 class="fw-bold">@selectedDevice.Name</h6>
+                            <p class="text-muted small">@selectedDevice.MacAddress · @selectedDevice.DeploymentLocation</p>
+                        }
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (string command in manualCommands)
+                            {
+                                <button class="btn btn-outline-primary" disabled="@(selectedDevice == null)" @onclick="() => IssueCommand(command)">@command</button>
+                            }
+                        </div>
+                        <hr />
+                        <button class="btn btn-warning" @onclick="UndoLastCommand">Undo Last Command</button>
+                        <p class="text-muted small mt-2 mb-0">Undo restores the previous command for the most recently commanded device.</p>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-warning">
+                    <div class="card-header"><h5 class="mb-0">Active Alerts</h5></div>
+                    <div class="card-body">
+                        @if (alertSensorIds.Count == 0)
+                        {
+                            <p class="text-muted mb-0">No active alerts. Process queued telemetry to update device alerts.</p>
+                        }
+                        @foreach (Guid sensorId in alertSensorIds)
+                        {
+                            SensorDevice? device = allDevices.FirstOrDefault(item => item.Id == sensorId);
+                            <div class="border-bottom py-2">
+                                <span class="badge bg-warning text-dark me-2">Active Alert</span>
+                                <strong>@(device?.Name ?? sensorId.ToString())</strong>
+                                <div class="text-muted small mt-1">@(device?.DeploymentLocation) · @(device?.Category)</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+
+    <div class="card shadow-sm border-primary mb-4">
+        <div class="card-header bg-primary text-white"><h5 class="mb-0">Automated Insights</h5></div>
+        <div class="card-body">
+            <p class="text-muted">Recommended next actions based on alerts and device searches. Higher scores indicate higher priority; commands are not issued automatically.</p>
+            @if (suggestions.Count == 0)
+            {
+                <p class="mb-0">No recommendations yet. Search for devices or process demo telemetry to generate insights.</p>
+            }
+            <div class="row g-3">
+                @foreach (SuggestedAction suggestion in suggestions)
+                {
+                    <div class="col-md-6 col-xl-4">
+                        <div class="border rounded p-3 h-100 bg-light">
+                            <div class="d-flex justify-content-between gap-2 mb-2">
+                                <strong>@suggestion.DeviceName</strong>
+                                <span class="badge bg-primary align-self-start">Score @suggestion.Score</span>
+                            </div>
+                            <p class="small text-muted">@suggestion.Reason</p>
+                            <div><span class="small">Suggested command</span><div class="fw-bold">@suggestion.SuggestedCommand</div></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white"><h5 class="mb-0">Live Telemetry History</h5></div>
+        <div class="card-body">
+            <p class="text-muted small">The latest 20 processed readings, in chronological order. Refresh manually to view new activity.</p>
+            @if (telemetryHistory.Count == 0)
+            {
+                <p class="mb-0">No telemetry processed yet. Seed demo data, then select Process Next Telemetry.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead><tr><th scope="col">Timestamp</th><th scope="col">Device</th><th scope="col">Metric</th><th scope="col">Reading</th><th scope="col">Alert State</th></tr></thead>
+                        <tbody>
+                            @foreach (StreamTelemetryItem item in telemetryHistory)
+                            {
+                                <tr><td>@FormatTime(item.Timestamp)</td><td>@item.DeviceName</td><td>@item.Metric</td><td>@item.Value @item.Unit</td><td><span class="badge @GetAlertClass(item.AlertState)">@item.AlertState</span></td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white"><h5 class="mb-0">Command History</h5></div>
+        <div class="card-body">
+            @if (commandHistory.Count == 0)
+            {
+                <p class="text-muted mb-0">No commands issued yet. Select a device and choose a manual command.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead><tr><th scope="col">Device</th><th scope="col">Command</th><th scope="col">Issued / Undo Time</th><th scope="col">Status</th></tr></thead>
+                        <tbody>
+                            @foreach (CommandHistoryEntry entry in commandHistory.AsEnumerable().Reverse())
+                            {
+                                <tr><td>@entry.DeviceName</td><td>@entry.Command</td><td>@FormatTime(entry.Timestamp)</td><td><span class="badge @(entry.Status == "Undone" ? "bg-secondary" : "bg-success")">@entry.Status</span></td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private DashboardStatistics stats = new();
+    private List<SensorDevice> allDevices = new();
+    private List<SensorDevice> devices = new();
+    private List<string> categories = new();
+    private List<Guid> alertSensorIds = new();
+    private List<StreamTelemetryItem> telemetryHistory = new();
+    private List<CommandHistoryEntry> commandHistory = new();
+    private List<SuggestedAction> suggestions = new();
+    private SensorDevice? selectedDevice;
+    private string search = string.Empty;
+    private string category = string.Empty;
+    private bool alertOnly;
+    private bool isLoading;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    private readonly string[] manualCommands =
+    {
+        "Activate Water Pump", "Disable Water Pump", "Enable Smart Relay",
+        "Disable Smart Relay", "Toggle Actuator", "Restart Device"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshDashboard();
+    }
+
+    private async Task LoadDashboard()
+    {
+        allDevices = await Http.GetFromJsonAsync<List<SensorDevice>>("api/realtime/devices") ?? new();
+        categories = allDevices.Select(device => device.Category)
+            .Distinct().OrderBy(value => value).ToList();
+
+        string query = $"search={Uri.EscapeDataString(search)}&category={Uri.EscapeDataString(category)}&alertOnly={alertOnly.ToString().ToLowerInvariant()}";
+        devices = string.IsNullOrWhiteSpace(search) && string.IsNullOrWhiteSpace(category) && !alertOnly
+            ? allDevices
+            : await Http.GetFromJsonAsync<List<SensorDevice>>($"api/realtime/devices?{query}") ?? new();
+
+        if (selectedDevice != null)
+        {
+            selectedDevice = allDevices.FirstOrDefault(device => device.Id == selectedDevice.Id);
+        }
+
+        stats = await Http.GetFromJsonAsync<DashboardStatistics>("api/realtime/stats") ?? new();
+        telemetryHistory = await Http.GetFromJsonAsync<List<StreamTelemetryItem>>("api/realtime/history?count=20") ?? new();
+        alertSensorIds = await Http.GetFromJsonAsync<List<Guid>>("api/realtime/alerts") ?? new();
+        suggestions = await Http.GetFromJsonAsync<List<SuggestedAction>>("api/realtime/suggestions") ?? new();
+        commandHistory = await Http.GetFromJsonAsync<List<CommandHistoryEntry>>("api/realtime/commands/history") ?? new();
+    }
+
+    private async Task RefreshDashboard()
+    {
+        await RunAction(async () => await LoadDashboard());
+    }
+
+    private async Task ApplyFilters()
+    {
+        await RefreshDashboard();
+    }
+
+    private async Task IssueCommand(string command)
+    {
+        if (selectedDevice == null) { return; }
+        Guid sensorId = selectedDevice.Id;
+        await RunAction(async () =>
+        {
+            using HttpResponseMessage response = await Http.PostAsJsonAsync("api/realtime/commands", new { sensorId, command });
+            await CheckResponse(response);
+            DeviceCommand? issued = await response.Content.ReadFromJsonAsync<DeviceCommand>();
+            successMessage = $"Issued {issued?.Command} to {issued?.DeviceName}.";
+            await LoadDashboard();
+        });
+    }
+
+    private async Task UndoLastCommand()
+    {
+        await RunAction(async () =>
+        {
+            using HttpResponseMessage response = await Http.PostAsync("api/realtime/commands/undo", null);
+            await CheckResponse(response);
+            DeviceCommand? command = await response.Content.ReadFromJsonAsync<DeviceCommand>();
+            successMessage = $"Undone: {command?.Command} for {command?.DeviceName}. Previous command: {(string.IsNullOrEmpty(command?.PreviousCommand) ? "No previous command" : command.PreviousCommand)}.";
+            await LoadDashboard();
+        });
+    }
+
+    private async Task ProcessNext()
+    {
+        await RunAction(async () =>
+        {
+            using HttpResponseMessage response = await Http.PostAsync("api/realtime/process-next", null);
+            await CheckResponse(response);
+            if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                successMessage = "Both queues are empty. Seed demo data to add telemetry.";
+            }
+            else
+            {
+                StreamTelemetryItem? item = await response.Content.ReadFromJsonAsync<StreamTelemetryItem>();
+                successMessage = $"Processed {item?.AlertState} packet: {item?.DeviceName} — {item?.Metric}: {item?.Value} {item?.Unit}.";
+            }
+            await LoadDashboard();
+        });
+    }
+
+    private async Task SeedDemo()
+    {
+        await RunAction(async () =>
+        {
+            using HttpResponseMessage response = await Http.PostAsync("api/realtime/seed", null);
+            await CheckResponse(response);
+            successMessage = "Part 2 demo telemetry added to the queues. Select Process Next Telemetry to process critical alerts first and update history and insights.";
+            await LoadDashboard();
+        });
+    }
+
+    private async Task RunAction(Func<Task> action)
+    {
+        if (isLoading) { return; }
+        isLoading = true;
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+        try
+        {
+            await action();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Unable to complete dashboard request: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private static async Task CheckResponse(HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            string message = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException(string.IsNullOrWhiteSpace(message)
+                ? $"API returned {(int)response.StatusCode}." : message);
+        }
+    }
+
+    private static string FormatTime(DateTime timestamp) => timestamp.ToLocalTime().ToString("dd MMM HH:mm:ss");
+
+    private static string GetAlertClass(string state) => state switch
+    {
+        "Normal" => "bg-success",
+        "Warning" => "bg-warning text-dark",
+        "Critical" => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    private class DashboardStatistics
+    {
+        public int DeviceCount { get; set; }
+        public int NormalQueueCount { get; set; }
+        public int CriticalQueueCount { get; set; }
+        public int ActiveAlertCount { get; set; }
+        public int CommandHistoryCount { get; set; }
+    }
+}
