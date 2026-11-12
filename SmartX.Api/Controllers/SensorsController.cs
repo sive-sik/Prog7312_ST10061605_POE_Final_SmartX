@@ -92,7 +92,8 @@ public class SensorsController : ControllerBase
         sensor.RegisteredAt = DateTime.UtcNow;
         sensor.Status = "Online";
 
-        _sensorStore.Add(sensor);
+        try { _sensorStore.Add(sensor); }
+        catch (InvalidOperationException) { return Conflict("A sensor with this MAC address is already registered."); }
 
         return CreatedAtAction(
             nameof(GetById),
