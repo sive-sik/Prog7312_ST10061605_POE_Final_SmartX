@@ -1,3 +1,4 @@
+using SmartX.Core.DataStructures;
 using SmartX.Core.Models;
 
 namespace SmartX.Api.Services;
@@ -5,6 +6,7 @@ namespace SmartX.Api.Services;
 public class RealTimeProcessingStore
 {
     private readonly object _lock = new();
+    private readonly TelemetryAvlTree _telemetryTree = new();
     private readonly Queue<StreamTelemetryItem> _incomingTelemetry = new();
     private readonly PriorityQueue<StreamTelemetryItem, int> _criticalTelemetry = new();
     private readonly Stack<DeviceCommand> _commands = new();
@@ -70,6 +72,7 @@ public class RealTimeProcessingStore
                 historyTime = historyTime.AddTicks(1);
             }
             _history.Add(historyTime, item);
+            _telemetryTree.Insert(item);
             UpdateActiveAlert(item.SensorId);
             return item;
         }
@@ -87,6 +90,11 @@ public class RealTimeProcessingStore
 
         if (hasAlert || disconnected) { _activeAlertSensors.Add(sensorId); }
         else { _activeAlertSensors.Remove(sensorId); }
+    }
+
+    public IReadOnlyList<StreamTelemetryItem> GetHistoricalRange(DateTime start, DateTime end, Guid? sensorId = null)
+    {
+        lock (_lock) { return _telemetryTree.SearchRange(start, end, sensorId); }
     }
 
     public IReadOnlyList<StreamTelemetryItem> GetHistory()
