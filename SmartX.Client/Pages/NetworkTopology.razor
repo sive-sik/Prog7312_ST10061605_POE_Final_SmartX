@@ -62,7 +62,8 @@
                                 </foreignObject>
                             }
                         </svg>
-                        <p class="small text-muted mt-2 mb-0">Green = active, red = offline, blue links = Prim minimum spanning tree. Node numbers match the device list.</p>
+                        <p class="small text-muted mt-2 mb-1">Green = active, red = offline, blue links = Prim minimum spanning tree. Node numbers match the device list.</p>
+                        <p class="fw-semibold mb-0">Prim MST total weight: @topology.MinimumSpanningTree.Sum(link => link.Weight).ToString("0.##")</p>
                     }
                 </div>
             </div>
