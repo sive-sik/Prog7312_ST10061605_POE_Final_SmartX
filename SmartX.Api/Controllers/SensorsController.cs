@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
 using SmartX.Api.Services;
 using SmartX.Core.Models;
 
@@ -59,6 +60,23 @@ public class SensorsController : ControllerBase
         if (string.IsNullOrWhiteSpace(sensor.Category))
         {
             return BadRequest("Sensor category is required.");
+        }
+
+        sensor.MacAddress = sensor.MacAddress.Trim().ToUpperInvariant();
+        sensor.Category = sensor.Category.Trim();
+        if (!Regex.IsMatch(sensor.MacAddress, @"\A(?:[0-9A-F]{2}:){5}[0-9A-F]{2}\z"))
+        {
+            return BadRequest("MAC address must use AA:BB:CC:DD:EE:FF format.");
+        }
+        if (!new[] { "Environmental", "Power Consumption", "Actuator" }.Contains(sensor.Category, StringComparer.OrdinalIgnoreCase))
+        {
+            return BadRequest("Category must be Environmental, Power Consumption or Actuator.");
+        }
+        sensor.Name = sensor.Name.Trim();
+        sensor.DeploymentLocation = sensor.DeploymentLocation.Trim();
+        if (sensor.Name.Length > 100 || sensor.DeploymentLocation.Length > 200)
+        {
+            return BadRequest("Name or deployment location is too long.");
         }
 
         SensorDevice? existing =
