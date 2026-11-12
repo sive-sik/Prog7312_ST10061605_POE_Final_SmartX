@@ -4,7 +4,8 @@ SmartX is a student IoT simulation built with .NET 10. It contains:
 
 - `SmartX.Api`: ASP.NET Core controllers and in-memory stores.
 - `SmartX.Client`: the Blazor WebAssembly interface.
-- `SmartX.Core`: shared models and Part 1 data structure examples.
+- `SmartX.Core`: shared models and data structures for Parts 1–3.
+- `SmartX.AlgorithmTests`: dependency-free console regression tests for the AVL and mesh graph algorithms.
 
 ## Build and Run
 
@@ -26,7 +27,7 @@ Start the client in another terminal:
 dotnet run --project SmartX.Client --launch-profile http
 ```
 
-Open `http://localhost:5281`. The configured client uses the API at `http://localhost:5182`.
+Open `http://localhost:5281`. The development API address is set in `SmartX.Client/wwwroot/appsettings.json` (`ApiBaseUrl`, default `http://localhost:5182/`). Update this value for other environments.
 Keep both applications running. Registered devices, telemetry and commands are stored in memory and reset when the API restarts.
 
 ## Part 1: Sensor Data and Device Health
@@ -57,7 +58,7 @@ The dashboard contains:
 - Active alerts identifying sensors that need attention.
 - **Automated Insights** showing recommended commands, reasons and priority scores.
 
-Use **Seed Part 2 Demo Data** to enqueue example readings and **Process Next Telemetry** to process one packet at a time. Seeding refreshes the dashboard, but packets only enter history and influence telemetry alerts after processing. **Refresh Dashboard** loads current data manually; there are no timers or SignalR connections. Commands update simulated device state rather than controlling physical hardware.
+Use **Seed Part 2 Demo Data** to enqueue example readings. A background service processes queued readings automatically every five seconds (up to 100 per tick), prioritising critical packets. **Process Next Telemetry** remains available for manual demonstrations, but background processing can consume packets first. **Refresh Dashboard** loads current data manually; there is no SignalR connection. Commands update simulated device state rather than controlling physical hardware.
 
 ## Testing the Part 2 Data Structures
 
@@ -68,7 +69,7 @@ The collections are declared and used in `SmartX.Api/Services/RealTimeProcessing
 1. Register at least one sensor in **Sensor Data**.
 2. Open `/command-stream` and click **Seed Part 2 Demo Data** once with empty queues.
 3. Confirm **Standard Queue** increases. Non-critical readings, including warnings, enter `Queue<StreamTelemetryItem>`.
-4. Use **Process Next Telemetry** until **Priority Alerts** reaches zero, then continue processing.
+4. Use **Process Next Telemetry** promptly, or let the background worker process the queues automatically.
 5. Observe the processed-packet messages: standard packets leave in first-in-first-out (FIFO) order. For one seed batch, the standard readings are soil moisture `45 %`, power `3500 W`, then temperature `25 °C`.
 
 ### PriorityQueue
@@ -91,7 +92,7 @@ The collections are declared and used in `SmartX.Api/Services/RealTimeProcessing
 
 ### Dictionary<Guid, SensorDevice>
 
-Register sensors in **Sensor Data**, then refresh the command stream dashboard. Confirm they appear, select one and issue a command. Registered devices are synchronised from the Part 1 `SensorStore` into `Dictionary<Guid, SensorDevice>` for fast lookup by sensor ID. The controller also uses this lookup to validate telemetry and command targets.
+Register sensors in **Sensor Data** using colon-delimited MAC addresses and Environmental, Power Consumption or Actuator categories, then refresh the command stream dashboard. Confirm they appear, select one and issue a command. Registered devices are synchronised from the Part 1 `SensorStore` into `Dictionary<Guid, SensorDevice>` for fast lookup by sensor ID. The controller also uses this lookup to validate telemetry and command targets.
 
 ### SortedDictionary<DateTime, StreamTelemetryItem>
 
@@ -148,4 +149,55 @@ Part 2 thresholds are soil moisture below `20` critical / below `30` warning, te
 14. Review **Active Alerts** and confirm each affected sensor appears once.
 15. Review **Automated Insights**, including reasons, commands and scores.
 
-The Network Topology / Mesh Routing module remains disabled for the Final PoE.
+## Part 3: Network Topology and Mesh Routing
+
+Open **Network Topology & Mesh Routing** at `/network-topology` or use the active Part 3 Home card. This module operates on registered devices and simulated weighted wireless links.
+
+- **AVL history:** `SmartX.Core/DataStructures/TelemetryAvlTree.cs` indexes processed Part 2 telemetry by timestamp. Duplicate timestamps are grouped; inclusive range searches optionally filter by sensor ID. The API endpoint is `GET /api/telemetry-history/range?start=...&end=...&sensorId=...` (sensor ID optional).
+- **Graph:** `SmartX.Core/DataStructures/MeshNetworkGraph.cs` stores undirected weighted links using adjacency dictionaries.
+- **BFS:** `FindRoute` returns a shortest-hop route; `BreadthFirstSearch` returns reachable nodes. BFS does not minimise the sum of weights.
+- **Prim:** `MinimumSpanningTree` returns a minimum spanning forest when the mesh is disconnected. The dashboard highlights its links and shows total weight.
+- **Failure simulation:** The API excludes manually marked offline nodes from routing and MST calculations. Links and failure states are in memory, not physical ESP32 connectivity.
+
+### Part 3 Demonstration
+
+1. Register three devices (A, B, C) on Sensor Data with distinct MAC addresses.
+2. Open Network Topology and add links A–B (weight 2), B–C (weight 3), and A–C (weight 10).
+3. Confirm three nodes and three links are shown. The blue MST edges should be A–B and B–C, with total weight 5.
+4. Find a route A to C. BFS should choose the direct one-hop link A–C, even though it has a higher weight than A–B–C.
+5. Simulate failure of B and confirm the MST and reachable paths update. Restore B.
+6. In Real-Time Command Stream, seed and process telemetry packets. Back on Network Topology, search a UTC range containing the processed timestamps to verify the AVL index.
+7. Restarting the API clears all in-memory data. Register devices and links again if needed.
+
+### Automated and Functional Testing
+
+Run the algorithm regression suite from the repository root:
+
+```powershell
+dotnet run --project SmartX.AlgorithmTests
+```
+
+The runner exercises 14 cases covering AVL insertion order and balancing, duplicate timestamps, inclusive ranges, sensor filters, invalid ranges, BFS shortest-hop routes, Prim MST weights, offline nodes, disconnected graphs and invalid links. A successful run reports `Algorithm tests: 14 passed, 0 failed.` and exits with code 0; any failure exits with code 1. This is a console runner, not an xUnit project, so use `dotnet run` rather than `dotnet test`.
+
+Six manual integration scenarios were completed during development: device registration and topology display, link creation, MST display, BFS route discovery, simulated failure/recovery, and AVL history queries. These scenarios depend on both the API and client running; the console tests do not substitute for API or browser testing. Retain screenshots or terminal output as submission evidence.
+
+### Mesh API
+
+- `GET /api/mesh/topology`
+- `GET /api/mesh/route?fromId=...&toId=...`
+- `GET /api/mesh/connectivity?fromId=...`
+- `POST /api/mesh/links` with JSON `{"fromId":"...","toId":"...","weight":2}`
+- `POST /api/mesh/devices/{deviceId}/status` with JSON `{"offline":true}`
+
+### Code Review and Edge Cases
+
+The mesh service refreshes device-reported offline states when synchronising registered devices, preventing previously reported failures from remaining stuck after a device returns online. Explicit simulated failure/restoration choices override the reported status for that device during the current API session. These choices are not persisted. Invalid missing route IDs are rejected by the mesh API, while unknown nonempty IDs return an unreachable result. Link creation rejects self-links, zero/negative/non-finite weights and unregistered endpoints.
+
+### Scope and Future Improvements
+
+The mesh is a simulation: links and weights are entered by the user, not discovered from real ESP32 radios. Consider persistent storage, authenticated administrative actions, real link-quality measurements, automated tests and live updates for a production system.
+
+
+## Post-audit hardening (November 2026)
+
+The API validates sensor MAC format and category, numeric stream telemetry, supported commands and device-category compatibility. Sensor and Part 1 telemetry stores now synchronise access. The command-stream page preserves filters and selected device across navigation in the current browser session. Latest-per-metric telemetry is cached to avoid repeatedly scanning all history for alerts and recommendations. The API's queue worker processes queued packets every five seconds; for deterministic FIFO/priority manual demonstrations, pause the API worker or process immediately. These changes require a fresh build and end-to-end regression check after pulling the branch.

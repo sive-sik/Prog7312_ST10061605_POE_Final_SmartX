@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
 using SmartX.Api.Services;
 using SmartX.Core.Models;
 
@@ -61,6 +62,23 @@ public class SensorsController : ControllerBase
             return BadRequest("Sensor category is required.");
         }
 
+        sensor.MacAddress = sensor.MacAddress.Trim().ToUpperInvariant();
+        sensor.Category = sensor.Category.Trim();
+        if (!Regex.IsMatch(sensor.MacAddress, @"\A(?:[0-9A-F]{2}:){5}[0-9A-F]{2}\z"))
+        {
+            return BadRequest("MAC address must use AA:BB:CC:DD:EE:FF format.");
+        }
+        if (!new[] { "Environmental", "Power Consumption", "Actuator" }.Contains(sensor.Category, StringComparer.OrdinalIgnoreCase))
+        {
+            return BadRequest("Category must be Environmental, Power Consumption or Actuator.");
+        }
+        sensor.Name = sensor.Name.Trim();
+        sensor.DeploymentLocation = sensor.DeploymentLocation.Trim();
+        if (sensor.Name.Length > 100 || sensor.DeploymentLocation.Length > 200)
+        {
+            return BadRequest("Name or deployment location is too long.");
+        }
+
         SensorDevice? existing =
             _sensorStore.GetByMacAddress(sensor.MacAddress);
 
@@ -74,7 +92,8 @@ public class SensorsController : ControllerBase
         sensor.RegisteredAt = DateTime.UtcNow;
         sensor.Status = "Online";
 
-        _sensorStore.Add(sensor);
+        try { _sensorStore.Add(sensor); }
+        catch (InvalidOperationException) { return Conflict("A sensor with this MAC address is already registered."); }
 
         return CreatedAtAction(
             nameof(GetById),

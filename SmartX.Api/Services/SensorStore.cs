@@ -5,26 +5,32 @@ namespace SmartX.Api.Services;
 public class SensorStore
 {
     private readonly List<SensorDevice> _sensors = new();
+    private readonly object _lock = new();
 
     public IReadOnlyList<SensorDevice> GetAll()
     {
-        return _sensors;
+        lock (_lock) { return _sensors.ToList(); }
     }
 
     public SensorDevice? GetById(Guid id)
     {
-        return _sensors.FirstOrDefault(sensor => sensor.Id == id);
+        lock (_lock) { return _sensors.FirstOrDefault(sensor => sensor.Id == id); }
     }
 
     public SensorDevice? GetByMacAddress(string macAddress)
     {
-        return _sensors.FirstOrDefault(sensor =>
-            sensor.MacAddress.Equals(macAddress, StringComparison.OrdinalIgnoreCase));
+        lock (_lock) { return _sensors.FirstOrDefault(sensor =>
+            sensor.MacAddress.Equals(macAddress, StringComparison.OrdinalIgnoreCase)); }
     }
 
     public SensorDevice Add(SensorDevice sensor)
     {
-        _sensors.Add(sensor);
+        lock (_lock)
+        {
+            if (_sensors.Any(item => item.MacAddress.Equals(sensor.MacAddress, StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException("A sensor with this MAC address is already registered.");
+            _sensors.Add(sensor);
+        }
         return sensor;
     }
 }

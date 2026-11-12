@@ -81,3 +81,30 @@
         overflow-y: auto;
     }
 }
+
+/* Keep every navigation icon and wrapped label in the same two-column grid. */
+.nav-item ::deep a {
+    height: auto;
+    min-height: 3rem;
+    padding: 0.7rem 0.65rem;
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+    column-gap: 0.75rem;
+    align-items: center;
+    line-height: 1.35;
+    text-decoration: none;
+}
+
+.nav-item ::deep a > .bi,
+.nav-item ::deep a > svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+    top: auto;
+    flex-shrink: 0;
+}
+
+.nav-item ::deep a > .nav-label {
+    min-width: 0;
+    overflow-wrap: break-word;
+}

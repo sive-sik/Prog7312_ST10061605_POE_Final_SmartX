@@ -1,3 +1,4 @@
+using SmartX.Core.DataStructures;
 using SmartX.Core.Models;
 
 namespace SmartX.Api.Services;
@@ -5,6 +6,7 @@ namespace SmartX.Api.Services;
 public class RealTimeProcessingStore
 {
     private readonly object _lock = new();
+    private readonly TelemetryAvlTree _telemetryTree = new();
     private readonly Queue<StreamTelemetryItem> _incomingTelemetry = new();
     private readonly PriorityQueue<StreamTelemetryItem, int> _criticalTelemetry = new();
     private readonly Stack<DeviceCommand> _commands = new();
@@ -12,6 +14,7 @@ public class RealTimeProcessingStore
     private readonly SortedDictionary<DateTime, StreamTelemetryItem> _history = new();
     private readonly HashSet<Guid> _activeAlertSensors = new();
     private readonly Dictionary<Guid, int> _searchFrequency = new();
+    private readonly Dictionary<Guid, Dictionary<string, StreamTelemetryItem>> _latestByMetric = new();
     private readonly Dictionary<Guid, string> _currentCommands = new();
     private readonly List<CommandHistoryEntry> _commandHistory = new();
 
@@ -70,6 +73,14 @@ public class RealTimeProcessingStore
                 historyTime = historyTime.AddTicks(1);
             }
             _history.Add(historyTime, item);
+            _telemetryTree.Insert(item);
+            if (!_latestByMetric.TryGetValue(item.SensorId, out var metrics))
+            {
+                metrics = new Dictionary<string, StreamTelemetryItem>(StringComparer.OrdinalIgnoreCase);
+                _latestByMetric[item.SensorId] = metrics;
+            }
+            if (!metrics.TryGetValue(item.Metric, out var previous) || item.Timestamp >= previous.Timestamp)
+                metrics[item.Metric] = item;
             UpdateActiveAlert(item.SensorId);
             return item;
         }
@@ -78,15 +89,19 @@ public class RealTimeProcessingStore
     private void UpdateActiveAlert(Guid sensorId)
     {
         // Check the latest reading for each metric so one normal metric cannot clear another alert.
-        bool hasAlert = _history.Values.Where(item => item.SensorId == sensorId)
-            .GroupBy(item => item.Metric, StringComparer.OrdinalIgnoreCase)
-            .Any(group => group.OrderByDescending(item => item.Timestamp).First().AlertState != "Normal");
+        bool hasAlert = _latestByMetric.TryGetValue(sensorId, out var metrics)
+            && metrics.Values.Any(item => item.AlertState != "Normal");
         string status = _devices[sensorId].Status;
         bool disconnected = status.Equals("Disconnected", StringComparison.OrdinalIgnoreCase)
             || status.Equals("Offline", StringComparison.OrdinalIgnoreCase);
 
         if (hasAlert || disconnected) { _activeAlertSensors.Add(sensorId); }
         else { _activeAlertSensors.Remove(sensorId); }
+    }
+
+    public IReadOnlyList<StreamTelemetryItem> GetHistoricalRange(DateTime start, DateTime end, Guid? sensorId = null)
+    {
+        lock (_lock) { return _telemetryTree.SearchRange(start, end, sensorId); }
     }
 
     public IReadOnlyList<StreamTelemetryItem> GetHistory()
@@ -198,12 +213,10 @@ public class RealTimeProcessingStore
             List<SuggestedAction> suggestions = new();
             foreach (SensorDevice device in _devices.Values)
             {
-                StreamTelemetryItem? alert = _history.Values
-                    .Where(item => item.SensorId == device.Id)
-                    .GroupBy(item => item.Metric, StringComparer.OrdinalIgnoreCase)
-                    .Select(group => group.OrderByDescending(item => item.Timestamp).First())
-                    .Where(item => item.AlertState != "Normal")
-                    .OrderByDescending(item => item.IsCritical).FirstOrDefault();
+                StreamTelemetryItem? alert = _latestByMetric.TryGetValue(device.Id, out var latest)
+                    ? latest.Values.Where(item => item.AlertState != "Normal")
+                        .OrderByDescending(item => item.IsCritical).FirstOrDefault()
+                    : null;
                 int searches = _searchFrequency.GetValueOrDefault(device.Id);
                 bool active = _activeAlertSensors.Contains(device.Id);
                 if (!active && searches == 0) { continue; }

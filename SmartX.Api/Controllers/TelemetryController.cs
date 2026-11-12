@@ -30,6 +30,9 @@ public class TelemetryController : ControllerBase
             return validationResult;
         }
 
+        if (string.IsNullOrWhiteSpace(packet.Metric)) { return BadRequest("Metric is required."); }
+        if (!double.IsFinite(packet.Value)) { return BadRequest("Reading must be finite."); }
+        if (packet.Metric.Equals("Soil Moisture", StringComparison.OrdinalIgnoreCase) && (packet.Value < 0 || packet.Value > 100)) { return BadRequest("Soil moisture must be between 0 and 100."); }
         packet.Timestamp = DateTime.UtcNow;
 
         _telemetryStore.Add(packet);
