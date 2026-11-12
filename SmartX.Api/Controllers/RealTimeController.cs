@@ -77,7 +77,11 @@ public class RealTimeController : ControllerBase
             return NotFound("The specified sensor is not registered.");
         }
         if (string.IsNullOrWhiteSpace(request.Command)) { return BadRequest("Command is required."); }
-        return Ok(_processingStore.IssueCommand(request.SensorId, request.Command.Trim()));
+        string command = request.Command.Trim();
+        string[] allowed = { "Activate Water Pump", "Disable Water Pump", "Enable Smart Relay", "Disable Smart Relay", "Toggle Actuator", "Restart Device", "Enable Cooling" };
+        if (!allowed.Contains(command, StringComparer.OrdinalIgnoreCase))
+            return BadRequest("Unsupported command.");
+        return Ok(_processingStore.IssueCommand(request.SensorId, command));
     }
 
     [HttpPost("commands/undo")]
@@ -103,7 +107,22 @@ public class RealTimeController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.Metric)) { return BadRequest("Metric is required."); }
         if (string.IsNullOrWhiteSpace(request.Value)) { return BadRequest("Value is required."); }
 
-        StreamTelemetryItem item = CreateTelemetry(device, request.Metric.Trim(), request.Value.Trim(), request.Unit);
+        string metric = request.Metric.Trim();
+        string value = request.Value.Trim();
+        if (metric.Equals("Soil Moisture", StringComparison.OrdinalIgnoreCase)
+            || metric.Equals("Temperature", StringComparison.OrdinalIgnoreCase)
+            || metric.Equals("Power", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double numeric) || !double.IsFinite(numeric))
+                return BadRequest("A finite numeric value is required for this metric.");
+            if (metric.Equals("Soil Moisture", StringComparison.OrdinalIgnoreCase) && (numeric < 0 || numeric > 100))
+                return BadRequest("Soil moisture must be between 0 and 100.");
+            if (metric.Equals("Power", StringComparison.OrdinalIgnoreCase) && numeric < 0)
+                return BadRequest("Power cannot be negative.");
+            if (metric.Equals("Temperature", StringComparison.OrdinalIgnoreCase) && (numeric < -100 || numeric > 200))
+                return BadRequest("Temperature is outside the supported range.");
+        }
+        StreamTelemetryItem item = CreateTelemetry(device, metric, value, request.Unit);
         _processingStore.EnqueueTelemetry(item);
         return Ok(item);
     }
