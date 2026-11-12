@@ -253,6 +253,64 @@
 
     </section>
 
+
+    <section class="report-section">
+        <h2>Part 3 Extension: Network Topology and Mesh Routing</h2>
+        <p>
+            The original Task 1 research above focuses on engagement, anomaly highlighting and guided
+            troubleshooting. The final POE extends the SmartX application with a separate network
+            topology module. This section documents the data structures and algorithms implemented
+            for Part 3; it does not change the original Task 1 research or its reference list.
+        </p>
+        <h3>AVL Tree for Historical Telemetry</h3>
+        <p>
+            Processed stream readings are indexed by timestamp in an AVL tree. Each node stores
+            its timestamp, readings with that timestamp, child references and height. Insertions
+            rebalance the tree using rotations. An inclusive date-range query visits readings
+            chronologically and can optionally filter by sensor ID. The AVL index supplements
+            the existing Part 2 sorted history rather than replacing it.
+        </p>
+        <h3>Weighted Graph for the Mesh</h3>
+        <p>
+            Registered SmartX devices become vertices in an undirected graph. An operator can add
+            weighted links to represent simulated wireless connections. Each link is stored in
+            both directions. The network diagram shows these links and identifies simulated offline
+            devices. Link weights are user-entered costs, not live radio measurements.
+        </p>
+        <h3>Breadth-First Search (BFS)</h3>
+        <p>
+            BFS explores neighbouring devices level by level. It determines which nodes can be
+            reached from a source and reconstructs a route with the fewest hops to a destination.
+            Offline nodes are excluded. Because BFS minimises hop count, the route is not
+            necessarily the route with the lowest total link weight.
+        </p>
+        <h3>Prim's Minimum Spanning Tree</h3>
+        <p>
+            Prim's algorithm selects low-weight links that connect reachable vertices without
+            cycles. The dashboard highlights selected links in blue and displays their combined
+            weight. If the graph is disconnected, the implementation returns a minimum spanning
+            forest: one tree for each connected component. Offline nodes are excluded from
+            this calculation.
+        </p>
+        <h3>Simulated Failure and Recovery</h3>
+        <p>
+            Operators can temporarily mark a device offline and restore it through the mesh
+            dashboard. Route discovery and the minimum spanning forest then exclude offline
+            devices. These are application-level simulations, not physical ESP32 failures or
+            automatic wireless network discovery.
+        </p>
+        <h3>Technology Considerations</h3>
+        <p>
+            The current ASP.NET Core API and Blazor WebAssembly client support a transparent,
+            testable simulation without requiring physical hardware. For a future deployment,
+            persistent storage would prevent loss of topology and telemetry after API restarts;
+            authenticated device management would restrict failure and link changes; and
+            measured signal strength or latency could supply meaningful link weights.
+            Live updates would also require an event or push mechanism rather than manual refresh.
+            These are recommendations for future work, not implemented features.
+        </p>
+    </section>
+
     <section class="report-section references">
 
         <h2>Reference List</h2>
