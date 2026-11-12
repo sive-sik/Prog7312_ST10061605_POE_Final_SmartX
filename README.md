@@ -5,6 +5,7 @@ SmartX is a student IoT simulation built with .NET 10. It contains:
 - `SmartX.Api`: ASP.NET Core controllers and in-memory stores.
 - `SmartX.Client`: the Blazor WebAssembly interface.
 - `SmartX.Core`: shared models and data structures for Parts 1–3.
+- `SmartX.AlgorithmTests`: dependency-free console regression tests for the AVL and mesh graph algorithms.
 
 ## Build and Run
 
@@ -168,6 +169,18 @@ Open **Network Topology & Mesh Routing** at `/network-topology` or use the activ
 6. In Real-Time Command Stream, seed and process telemetry packets. Back on Network Topology, search a UTC range containing the processed timestamps to verify the AVL index.
 7. Restarting the API clears all in-memory data. Register devices and links again if needed.
 
+### Automated and Functional Testing
+
+Run the algorithm regression suite from the repository root:
+
+```powershell
+dotnet run --project SmartX.AlgorithmTests
+```
+
+The runner exercises 14 cases covering AVL insertion order and balancing, duplicate timestamps, inclusive ranges, sensor filters, invalid ranges, BFS shortest-hop routes, Prim MST weights, offline nodes, disconnected graphs and invalid links. A successful run reports `Algorithm tests: 14 passed, 0 failed.` and exits with code 0; any failure exits with code 1. This is a console runner, not an xUnit project, so use `dotnet run` rather than `dotnet test`.
+
+Six manual integration scenarios were completed during development: device registration and topology display, link creation, MST display, BFS route discovery, simulated failure/recovery, and AVL history queries. These scenarios depend on both the API and client running; the console tests do not substitute for API or browser testing. Retain screenshots or terminal output as submission evidence.
+
 ### Mesh API
 
 - `GET /api/mesh/topology`
@@ -175,6 +188,10 @@ Open **Network Topology & Mesh Routing** at `/network-topology` or use the activ
 - `GET /api/mesh/connectivity?fromId=...`
 - `POST /api/mesh/links` with JSON `{"fromId":"...","toId":"...","weight":2}`
 - `POST /api/mesh/devices/{deviceId}/status` with JSON `{"offline":true}`
+
+### Code Review and Edge Cases
+
+The mesh service refreshes device-reported offline states when synchronising registered devices, preventing previously reported failures from remaining stuck after a device returns online. Explicit simulated failure/restoration choices override the reported status for that device during the current API session. These choices are not persisted. Invalid missing route IDs are rejected by the mesh API, while unknown nonempty IDs return an unreachable result. Link creation rejects self-links, zero/negative/non-finite weights and unregistered endpoints.
 
 ### Scope and Future Improvements
 
