@@ -81,6 +81,13 @@ public class RealTimeController : ControllerBase
         string[] allowed = { "Activate Water Pump", "Disable Water Pump", "Enable Smart Relay", "Disable Smart Relay", "Toggle Actuator", "Restart Device", "Enable Cooling" };
         if (!allowed.Contains(command, StringComparer.OrdinalIgnoreCase))
             return BadRequest("Unsupported command.");
+        SensorDevice device = _processingStore.GetDevice(request.SensorId)!;
+        bool compatible = command.Equals("Restart Device", StringComparison.OrdinalIgnoreCase)
+            || (command.Contains("Water Pump", StringComparison.OrdinalIgnoreCase) && device.Category.Equals("Actuator", StringComparison.OrdinalIgnoreCase))
+            || (command.Contains("Smart Relay", StringComparison.OrdinalIgnoreCase) && (device.Category.Equals("Actuator", StringComparison.OrdinalIgnoreCase) || device.Category.Equals("Power Consumption", StringComparison.OrdinalIgnoreCase)))
+            || (command.Equals("Toggle Actuator", StringComparison.OrdinalIgnoreCase) && device.Category.Equals("Actuator", StringComparison.OrdinalIgnoreCase))
+            || (command.Equals("Enable Cooling", StringComparison.OrdinalIgnoreCase) && device.Category.Equals("Actuator", StringComparison.OrdinalIgnoreCase));
+        if (!compatible) return BadRequest("This command is not supported for the selected device category.");
         return Ok(_processingStore.IssueCommand(request.SensorId, command));
     }
 
