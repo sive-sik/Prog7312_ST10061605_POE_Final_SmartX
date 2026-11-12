@@ -5,6 +5,7 @@ using SmartX.Client;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.RootComponents.Add<App>("#app");
+builder.Services.AddScoped<SmartX.Client.Services.CommandStreamState>();
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp =>
