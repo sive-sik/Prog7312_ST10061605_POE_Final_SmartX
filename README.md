@@ -27,7 +27,7 @@ Start the client in another terminal:
 dotnet run --project SmartX.Client --launch-profile http
 ```
 
-Open `http://localhost:5281`. The configured client uses the API at `http://localhost:5182`.
+Open `http://localhost:5281`. The development API address is set in `SmartX.Client/wwwroot/appsettings.json` (`ApiBaseUrl`, default `http://localhost:5182/`). Update this value for other environments.
 Keep both applications running. Registered devices, telemetry and commands are stored in memory and reset when the API restarts.
 
 ## Part 1: Sensor Data and Device Health
@@ -58,7 +58,7 @@ The dashboard contains:
 - Active alerts identifying sensors that need attention.
 - **Automated Insights** showing recommended commands, reasons and priority scores.
 
-Use **Seed Part 2 Demo Data** to enqueue example readings and **Process Next Telemetry** to process one packet at a time. Seeding refreshes the dashboard, but packets only enter history and influence telemetry alerts after processing. **Refresh Dashboard** loads current data manually; there are no timers or SignalR connections. Commands update simulated device state rather than controlling physical hardware.
+Use **Seed Part 2 Demo Data** to enqueue example readings. A background service processes queued readings automatically every five seconds (up to 100 per tick), prioritising critical packets. **Process Next Telemetry** remains available for manual demonstrations, but background processing can consume packets first. **Refresh Dashboard** loads current data manually; there is no SignalR connection. Commands update simulated device state rather than controlling physical hardware.
 
 ## Testing the Part 2 Data Structures
 
@@ -69,7 +69,7 @@ The collections are declared and used in `SmartX.Api/Services/RealTimeProcessing
 1. Register at least one sensor in **Sensor Data**.
 2. Open `/command-stream` and click **Seed Part 2 Demo Data** once with empty queues.
 3. Confirm **Standard Queue** increases. Non-critical readings, including warnings, enter `Queue<StreamTelemetryItem>`.
-4. Use **Process Next Telemetry** until **Priority Alerts** reaches zero, then continue processing.
+4. Use **Process Next Telemetry** promptly, or let the background worker process the queues automatically.
 5. Observe the processed-packet messages: standard packets leave in first-in-first-out (FIFO) order. For one seed batch, the standard readings are soil moisture `45 %`, power `3500 W`, then temperature `25 °C`.
 
 ### PriorityQueue
@@ -92,7 +92,7 @@ The collections are declared and used in `SmartX.Api/Services/RealTimeProcessing
 
 ### Dictionary<Guid, SensorDevice>
 
-Register sensors in **Sensor Data**, then refresh the command stream dashboard. Confirm they appear, select one and issue a command. Registered devices are synchronised from the Part 1 `SensorStore` into `Dictionary<Guid, SensorDevice>` for fast lookup by sensor ID. The controller also uses this lookup to validate telemetry and command targets.
+Register sensors in **Sensor Data** using colon-delimited MAC addresses and Environmental, Power Consumption or Actuator categories, then refresh the command stream dashboard. Confirm they appear, select one and issue a command. Registered devices are synchronised from the Part 1 `SensorStore` into `Dictionary<Guid, SensorDevice>` for fast lookup by sensor ID. The controller also uses this lookup to validate telemetry and command targets.
 
 ### SortedDictionary<DateTime, StreamTelemetryItem>
 
@@ -197,3 +197,7 @@ The mesh service refreshes device-reported offline states when synchronising reg
 
 The mesh is a simulation: links and weights are entered by the user, not discovered from real ESP32 radios. Consider persistent storage, authenticated administrative actions, real link-quality measurements, automated tests and live updates for a production system.
 
+
+## Post-audit hardening (November 2026)
+
+The API validates sensor MAC format and category, numeric stream telemetry, supported commands and device-category compatibility. Sensor and Part 1 telemetry stores now synchronise access. The command-stream page preserves filters and selected device across navigation in the current browser session. Latest-per-metric telemetry is cached to avoid repeatedly scanning all history for alerts and recommendations. The API's queue worker processes queued packets every five seconds; for deterministic FIFO/priority manual demonstrations, pause the API worker or process immediately. These changes require a fresh build and end-to-end regression check after pulling the branch.
