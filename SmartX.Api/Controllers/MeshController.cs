@@ -28,6 +28,7 @@ public class MeshController : ControllerBase
     [HttpGet("route")]
     public IActionResult GetRoute([FromQuery] Guid fromId, [FromQuery] Guid toId)
     {
+        if (fromId == Guid.Empty || toId == Guid.Empty) { return BadRequest("Valid source and destination IDs are required."); }
         Synchronise();
         return Ok(mesh.GetRoute(fromId, toId));
     }
@@ -35,6 +36,7 @@ public class MeshController : ControllerBase
     [HttpGet("connectivity")]
     public IActionResult GetConnectivity([FromQuery] Guid fromId)
     {
+        if (fromId == Guid.Empty) { return BadRequest("A valid source device ID is required."); }
         Synchronise();
         return Ok(mesh.GetConnectivity(fromId));
     }
