@@ -299,6 +299,23 @@
             devices. These are application-level simulations, not physical ESP32 failures or
             automatic wireless network discovery.
         </p>
+        <h3>Verification and Limitations</h3>
+        <p>
+            SmartX includes a separate console regression runner with 14 checks for AVL
+            timestamp queries, BFS connectivity and routing, Prim's minimum spanning tree,
+            disconnected graphs and invalid links. Six application-level scenarios were
+            also tested during development: registered devices, links, MST output, BFS
+            routes, simulated failures and AVL historical queries. Automated algorithm
+            tests are not a substitute for browser or API integration testing.
+        </p>
+        <p>
+            Mesh link costs are entered manually. BFS returns the route with the fewest
+            hops, while Prim selects a low-cost spanning structure; these results need
+            not use the same links. A disconnected mesh produces a spanning forest.
+            Device-reported offline states are refreshed when devices are synchronised,
+            and manually simulated states can override them for the current session.
+            Network topology and telemetry are stored in memory and reset on API restart.
+        </p>
         <h3>Technology Considerations</h3>
         <p>
             The current ASP.NET Core API and Blazor WebAssembly client support a transparent,
