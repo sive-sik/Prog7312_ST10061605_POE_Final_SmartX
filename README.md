@@ -4,7 +4,7 @@ SmartX is a student IoT simulation built with .NET 10. It contains:
 
 - `SmartX.Api`: ASP.NET Core controllers and in-memory stores.
 - `SmartX.Client`: the Blazor WebAssembly interface.
-- `SmartX.Core`: shared models and Part 1 data structure examples.
+- `SmartX.Core`: shared models and data structures for Parts 1–3.
 
 ## Build and Run
 
@@ -148,4 +148,35 @@ Part 2 thresholds are soil moisture below `20` critical / below `30` warning, te
 14. Review **Active Alerts** and confirm each affected sensor appears once.
 15. Review **Automated Insights**, including reasons, commands and scores.
 
-The Network Topology / Mesh Routing module remains disabled for the Final PoE.
+## Part 3: Network Topology and Mesh Routing
+
+Open **Network Topology & Mesh Routing** at `/network-topology` or use the active Part 3 Home card. This module operates on registered devices and simulated weighted wireless links.
+
+- **AVL history:** `SmartX.Core/DataStructures/TelemetryAvlTree.cs` indexes processed Part 2 telemetry by timestamp. Duplicate timestamps are grouped; inclusive range searches optionally filter by sensor ID. The API endpoint is `GET /api/telemetry-history/range?start=...&end=...&sensorId=...` (sensor ID optional).
+- **Graph:** `SmartX.Core/DataStructures/MeshNetworkGraph.cs` stores undirected weighted links using adjacency dictionaries.
+- **BFS:** `FindRoute` returns a shortest-hop route; `BreadthFirstSearch` returns reachable nodes. BFS does not minimise the sum of weights.
+- **Prim:** `MinimumSpanningTree` returns a minimum spanning forest when the mesh is disconnected. The dashboard highlights its links and shows total weight.
+- **Failure simulation:** The API excludes manually marked offline nodes from routing and MST calculations. Links and failure states are in memory, not physical ESP32 connectivity.
+
+### Part 3 Demonstration
+
+1. Register three devices (A, B, C) on Sensor Data with distinct MAC addresses.
+2. Open Network Topology and add links A–B (weight 2), B–C (weight 3), and A–C (weight 10).
+3. Confirm three nodes and three links are shown. The blue MST edges should be A–B and B–C, with total weight 5.
+4. Find a route A to C. BFS should choose the direct one-hop link A–C, even though it has a higher weight than A–B–C.
+5. Simulate failure of B and confirm the MST and reachable paths update. Restore B.
+6. In Real-Time Command Stream, seed and process telemetry packets. Back on Network Topology, search a UTC range containing the processed timestamps to verify the AVL index.
+7. Restarting the API clears all in-memory data. Register devices and links again if needed.
+
+### Mesh API
+
+- `GET /api/mesh/topology`
+- `GET /api/mesh/route?fromId=...&toId=...`
+- `GET /api/mesh/connectivity?fromId=...`
+- `POST /api/mesh/links` with JSON `{"fromId":"...","toId":"...","weight":2}`
+- `POST /api/mesh/devices/{deviceId}/status` with JSON `{"offline":true}`
+
+### Scope and Future Improvements
+
+The mesh is a simulation: links and weights are entered by the user, not discovered from real ESP32 radios. Consider persistent storage, authenticated administrative actions, real link-quality measurements, automated tests and live updates for a production system.
+
