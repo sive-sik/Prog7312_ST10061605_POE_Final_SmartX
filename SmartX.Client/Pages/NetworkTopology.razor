@@ -46,14 +46,20 @@
                                 var start = Position(link.FromId);
                                 var end = Position(link.ToId);
                                 <line x1="@start.X" y1="@start.Y" x2="@end.X" y2="@end.Y" stroke="@(IsMstLink(link) ? "#0d6efd" : "#adb5bd")" stroke-width="@(IsMstLink(link) ? 4 : 2)" />
-                                <text x="@((start.X + end.X) / 2)" y="@((start.Y + end.Y) / 2 - 5)" text-anchor="middle" font-size="13">@link.Weight</text>
+                                <foreignObject x="@((start.X + end.X) / 2 - 22)" y="@((start.Y + end.Y) / 2 - 19)" width="44" height="20">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" style="text-align:center;font-size:12px;background:#f8f9fa">@link.Weight</div>
+                                </foreignObject>
                             }
                             @foreach (Guid id in topology.NodeIds)
                             {
                                 var position = Position(id);
                                 <circle cx="@position.X" cy="@position.Y" r="22" fill="@(topology.OfflineNodeIds.Contains(id) ? "#dc3545" : "#198754")" stroke="white" stroke-width="3" />
-                                <text x="@position.X" y="@(position.Y + 4)" text-anchor="middle" fill="white" font-size="13">@(topology.NodeIds.IndexOf(id) + 1)</text>
-                                <text x="@position.X" y="@(position.Y + 37)" text-anchor="middle" font-size="11">@ShortName(id)</text>
+                                <foreignObject x="@(position.X - 18)" y="@(position.Y - 12)" width="36" height="24">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" style="color:white;text-align:center;font-size:14px;font-weight:bold">@(topology.NodeIds.IndexOf(id) + 1)</div>
+                                </foreignObject>
+                                <foreignObject x="@(position.X - 65)" y="@(position.Y + 25)" width="130" height="22">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" style="text-align:center;font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">@ShortName(id)</div>
+                                </foreignObject>
                             }
                         </svg>
                         <p class="small text-muted mt-2 mb-0">Green = active, red = offline, blue links = Prim minimum spanning tree. Node numbers match the device list.</p>
